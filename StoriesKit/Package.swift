@@ -8,6 +8,10 @@ let package = Package(
     .library(
       name: "StoriesKit",
       targets: ["StoriesKit"]
+    ),
+    .executable(
+      name: "Example",
+      targets: ["Example"]
     )
   ],
   dependencies: [
@@ -17,6 +21,10 @@ let package = Package(
     .target(
       name: "StoriesKit",
       dependencies: ["Kingfisher"]
+    ),
+    .executableTarget(
+      name: "Example",
+      dependencies: ["StoriesKit"]
     )
   ]
 )

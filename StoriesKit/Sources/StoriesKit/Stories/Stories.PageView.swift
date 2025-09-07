@@ -50,7 +50,8 @@ extension Stories {
                     .overlay {
                         contentOverlay(for: model)
                     }
-                .scaleEffect(getScaleEffect())
+                    .clipped()
+                    .scaleEffect(getScaleEffect())
             }
         }
         

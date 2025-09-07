@@ -1,7 +1,7 @@
 import Foundation
 
 /// Model representing a group of stories (e.g., from one user)
-public struct StoriesGroupModel: Hashable {
+public struct StoriesGroupModel: Hashable, Identifiable {
     public let id: String
     public let title: String
     public let avatarImage: StoriesImageModel.ImageSource
