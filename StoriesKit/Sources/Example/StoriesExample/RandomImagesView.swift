@@ -40,13 +40,3 @@ struct RandomImagesView: View {
         .padding(.horizontal, 16)
     }
 }
-
-#Preview {
-    let sampleImages = (1...5).map { index in
-        "https://picsum.photos/400/200?random=\(index + 100)"
-    }
-    
-    ScrollView {
-        RandomImagesView(images: sampleImages)
-    }
-}

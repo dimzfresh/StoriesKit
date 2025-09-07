@@ -24,7 +24,7 @@ struct StoriesView: View {
     }
 }
 
-class SimpleStoriesDelegate: IStoriesDelegate {
+final class SimpleStoriesDelegate: IStoriesDelegate {
     private let onClose: () -> Void
     
     init(onClose: @escaping () -> Void) {
