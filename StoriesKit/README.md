@@ -1,6 +1,6 @@
 # StoriesKit
 
-![Demo GIF](./assets/demo.gif)
+![StoriesKit Demo](./assets/demo_small.gif)
 
 A beautiful SwiftUI library for creating Instagram-style stories with smooth animations and match geometry effects.
 
