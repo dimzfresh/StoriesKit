@@ -2,6 +2,7 @@ import SwiftUI
 import UIKit
 
 extension Stories {
+    /// Main content view for Stories with navigation and gesture handling
     struct ContentView<ViewModel: ObservableObject>: View where ViewModel: IStoriesViewModel {
         @StateObject private var viewModel: ViewModel
 
@@ -10,11 +11,13 @@ extension Stories {
         @State private var isScrolling = false
         @State private var scrollViewProxy: ScrollViewProxy?
 
+        /// Direction of drag gesture
         enum DragDirection {
             case horizontal
             case vertical
         }
         
+        /// Direction of swipe gesture
         enum SwipeDirection {
             case left
             case right

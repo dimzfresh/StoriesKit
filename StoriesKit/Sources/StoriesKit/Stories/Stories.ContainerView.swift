@@ -1,6 +1,7 @@
 import SwiftUI
 
 extension Stories {
+    /// SwiftUI container view for Stories
     public struct ContainerView: View {
         @StateObject private var viewModel: ViewModel
         

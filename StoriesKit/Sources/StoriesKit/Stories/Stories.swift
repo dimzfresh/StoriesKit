@@ -3,11 +3,11 @@ import UIKit
 import Combine
 
 public enum Stories {
-    /// Создает UIKit версию Stories
+    /// Creates UIKit version of Stories
     /// - Parameters:
-    ///   - groups: Массив групп историй
-    ///   - delegate: Делегат для обработки событий
-    /// - Returns: UIViewController для презентации
+    ///   - groups: Array of story groups
+    ///   - delegate: Delegate for event handling
+    /// - Returns: UIViewController for presentation
     public static func build(
         groups: [StoriesGroupModel],
         delegate: IStoriesDelegate? = nil
@@ -22,12 +22,12 @@ public enum Stories {
         return viewController
     }
     
-    /// Создает чистую SwiftUI версию Stories (без UIHostingController)
+    /// Creates pure SwiftUI version of Stories (without UIHostingController)
     /// - Parameters:
-    ///   - groups: Массив групп историй
-    ///   - delegate: Делегат для обработки событий
-    /// - Returns: Чистая SwiftUI View для встраивания в SwiftUI иерархию
-    public static func buildSwiftUI(
+    ///   - groups: Array of story groups
+    ///   - delegate: Delegate for event handling
+    /// - Returns: Pure SwiftUI View for embedding in SwiftUI hierarchy
+    public static func build(
         groups: [StoriesGroupModel],
         delegate: IStoriesDelegate? = nil
     ) -> some View {

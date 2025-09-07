@@ -1,6 +1,7 @@
 import Foundation
 
 extension Stories {
+    /// Events that can be sent to the Stories view model
     enum ViewEvent: Hashable {
         case didAppear
         case didTapNext

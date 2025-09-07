@@ -1,6 +1,7 @@
 import Foundation
 import UIKit
 
+/// Model for story images with support for local and remote sources
 public struct StoriesImageModel: Hashable {
     public let image: ImageSource
     public let placeholder: UIImage?
@@ -19,6 +20,7 @@ public struct StoriesImageModel: Hashable {
         self.isViewed = isViewed
     }
 
+    /// Image source types
     public enum ImageSource: Hashable {
         case image(UIImage?)
         case url(URL)

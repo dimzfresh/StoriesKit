@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 
+/// Protocol for Stories view model
 protocol IStoriesViewModel: ObservableObject {
     var state: Stories.ViewState { get }
 
@@ -8,6 +9,7 @@ protocol IStoriesViewModel: ObservableObject {
 }
 
 extension Stories {
+    /// View model for managing Stories state and logic
     final class ViewModel: IStoriesViewModel {
         @Published var state: ViewState
 

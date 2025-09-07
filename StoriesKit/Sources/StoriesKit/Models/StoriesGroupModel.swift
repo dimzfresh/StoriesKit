@@ -1,5 +1,6 @@
 import Foundation
 
+/// Model representing a group of stories (e.g., from one user)
 public struct StoriesGroupModel: Hashable {
     public let id: String
     public let title: String

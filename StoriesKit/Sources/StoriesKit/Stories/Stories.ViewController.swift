@@ -2,6 +2,7 @@ import UIKit
 import SwiftUI
 
 extension Stories {
+    /// UIKit view controller for presenting Stories
     final class ViewController: AnyHostingController {
         init(viewModel: ViewModel) {
             super.init(rootView: ContentView(viewModel: viewModel))

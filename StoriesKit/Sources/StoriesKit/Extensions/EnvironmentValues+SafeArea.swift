@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Extension for accessing safe area insets in SwiftUI
 extension EnvironmentValues {
     var safeAreaInsets: EdgeInsets {
         self[SafeAreaInsetsKey.self]

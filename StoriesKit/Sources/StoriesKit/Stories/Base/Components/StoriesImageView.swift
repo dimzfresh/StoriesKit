@@ -1,6 +1,7 @@
 import SwiftUI
 import Kingfisher
 
+/// SwiftUI view for displaying story images with support for local and remote images
 public struct StoriesImageView: View {
     public let model: StoriesImageModel
 

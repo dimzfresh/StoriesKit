@@ -1,6 +1,7 @@
 import SwiftUI
 
 extension Stories {
+    /// Individual story page view with content and interactions
     struct PageView: View {
         let group: StoriesGroupModel
         let currentPage: StoriesPageModel?

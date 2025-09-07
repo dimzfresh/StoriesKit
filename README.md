@@ -4,25 +4,25 @@
 [![iOS](https://img.shields.io/badge/iOS-15.0+-blue.svg)](https://developer.apple.com/ios/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**StoriesKit** — это современная Swift библиотека для создания красивых историй в стиле Instagram Stories с поддержкой как UIKit, так и SwiftUI. Библиотека предоставляет готовые компоненты для отображения историй с поддержкой навигации, таймеров и интерактивных элементов.
+**StoriesKit** is a modern Swift library for creating beautiful Instagram-style stories with support for both UIKit and SwiftUI. The library provides ready-to-use components for displaying stories with navigation, timers, and interactive elements.
 
-## ✨ Особенности
+## ✨ Features
 
-- 🎨 **Красивый дизайн** — современный UI в стиле популярных социальных сетей
-- ⚡ **Высокая производительность** — оптимизированная архитектура с использованием SwiftUI и Combine
-- 🖼️ **Поддержка изображений** — загрузка изображений по URL с кэшированием (Kingfisher)
-- ⏱️ **Автоматические таймеры** — настраиваемая длительность историй
-- 🎯 **Интерактивность** — поддержка кнопок, ссылок и жестов
-- 📱 **Адаптивность** — поддержка различных размеров экранов
-- 🔄 **Навигация** — плавные переходы между историями и группами
-- 🎛️ **Гибкая настройка** — богатые возможности кастомизации
-- 🏗️ **Двойная поддержка** — работает как в UIKit, так и в SwiftUI
+- 🎨 **Beautiful Design** — Modern UI in the style of popular social networks
+- ⚡ **High Performance** — Optimized architecture using SwiftUI and Combine
+- 🖼️ **Image Support** — URL image loading with caching (Kingfisher)
+- ⏱️ **Automatic Timers** — Configurable story duration
+- 🎯 **Interactivity** — Support for buttons, links, and gestures
+- 📱 **Responsive** — Support for various screen sizes
+- 🔄 **Navigation** — Smooth transitions between stories and groups
+- 🎛️ **Flexible Customization** — Rich customization options
+- 🏗️ **Dual Platform Support** — Works in both UIKit and SwiftUI
 
-## 🚀 Быстрый старт
+## 🚀 Quick Start
 
-### Установка
+### Installation
 
-Добавьте StoriesKit в ваш проект через Swift Package Manager:
+Add StoriesKit to your project via Swift Package Manager:
 
 ```swift
 dependencies: [
@@ -30,24 +30,24 @@ dependencies: [
 ]
 ```
 
-### Базовое использование
+### Basic Usage
 
 #### UIKit
 
 ```swift
 import StoriesKit
 
-// Создание историй для UIKit
+// Create stories for UIKit
 let storiesViewController = Stories.build(
     groups: [
         StoriesGroupModel(
             id: "user1",
-            title: "Пользователь 1",
+            title: "User 1",
             avatarImage: .url(URL(string: "https://example.com/avatar.jpg")!),
             stories: [
                 StoriesPageModel(
-                    title: AttributedString("Заголовок истории"),
-                    subtitle: AttributedString("Подзаголовок"),
+                    title: AttributedString("Story Title"),
+                    subtitle: AttributedString("Story Subtitle"),
                     backgroundColor: .systemBlue,
                     backgroundImage: StoriesImageModel(
                         image: .url(URL(string: "https://example.com/story.jpg")!)
@@ -60,7 +60,7 @@ let storiesViewController = Stories.build(
     delegate: self
 )
 
-// Презентация
+// Present
 present(storiesViewController, animated: true)
 ```
 
@@ -72,18 +72,18 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        // Создание чистой SwiftUI View
-        Stories.buildSwiftUI(
+        // Create pure SwiftUI View
+        Stories.build(
             groups: [
                 StoriesGroupModel(
                     id: "user1",
-                    title: "Пользователь 1",
+                    title: "User 1",
                     avatarImage: .url(URL(string: "https://example.com/avatar.jpg")!),
                     stories: [
                         StoriesPageModel(
-                            title: AttributedString("Заголовок истории"),
-                            subtitle: AttributedString("Подзаголовок"),
-                            backgroundColor: .systemBlue,
+                            title: AttributedString("Story Title"),
+                            subtitle: AttributedString("Story Subtitle"),
+                            backgroundColor: .blue,
                             backgroundImage: StoriesImageModel(
                                 image: .url(URL(string: "https://example.com/story.jpg")!)
                             ),
@@ -98,33 +98,33 @@ struct ContentView: View {
 }
 ```
 
-## 📖 Подробная документация
+## 📖 Detailed Documentation
 
-### Модели данных
+### Data Models
 
 #### StoriesGroupModel
-Представляет группу историй (например, истории одного пользователя):
+Represents a group of stories (e.g., stories from one user):
 
 ```swift
 StoriesGroupModel(
     id: "unique_id",
-    title: "Название группы",
+    title: "Group Title",
     avatarImage: .url(URL(string: "avatar_url")!),
-    stories: [/* массив историй */],
+    stories: [/* array of stories */],
     isViewed: false
 )
 ```
 
 #### StoriesPageModel
-Отдельная страница истории:
+Individual story page:
 
 ```swift
 StoriesPageModel(
-    title: AttributedString("Заголовок"),
-    subtitle: AttributedString("Подзаголовок"),
+    title: AttributedString("Title"),
+    subtitle: AttributedString("Subtitle"),
     backgroundColor: .systemBlue,
     button: StoriesPageModel.Button(
-        title: AttributedString("Кнопка"),
+        title: AttributedString("Button"),
         backgroundColor: .white,
         corners: .radius(8),
         actionType: .link(URL(string: "https://example.com")!)
@@ -137,67 +137,67 @@ StoriesPageModel(
 ```
 
 #### StoriesImageModel
-Модель для изображений с поддержкой различных источников:
+Model for images with support for various sources:
 
 ```swift
 StoriesImageModel(
-    image: .url(URL(string: "image_url")!), // или .image(UIImage)
+    image: .url(URL(string: "image_url")!), // or .image(UIImage)
     placeholder: UIImage(named: "placeholder"),
     fadeInDuration: 0.25,
     isViewed: false
 )
 ```
 
-### Делегат
+### Delegate
 
-Реализуйте протокол `IStoriesDelegate` для обработки событий:
+Implement the `IStoriesDelegate` protocol to handle events:
 
 ```swift
 extension YourViewController: IStoriesDelegate {
     func didClose() {
-        // История закрыта
+        // Story closed
     }
     
     func didOpenLink(url: URL) {
-        // Открытие ссылки
+        // Open link
         UIApplication.shared.open(url)
     }
     
     func didOpenStory(storyId: String) {
-        // Открытие конкретной истории
+        // Open specific story
     }
 }
 ```
 
-### Типы кнопок
+### Button Types
 
 ```swift
-// Кнопка "Далее"
+// Next button
 .actionType = .next
 
-// Кнопка "Закрыть"
+// Close button
 .actionType = .close
 
-// Кнопка со ссылкой
+// Link button
 .actionType = .link(URL(string: "https://example.com")!)
 ```
 
-### Стили углов кнопок
+### Button Corner Styles
 
 ```swift
-// Без скругления
+// No rounding
 .corners = .none
 
-// Круглая кнопка
+// Circular button
 .corners = .circle
 
-// Кастомное скругление
+// Custom rounding
 .corners = .radius(12)
 ```
 
-## 🚀 Примеры встраивания
+## 🚀 Integration Examples
 
-### UIKit - Встраивание в существующий контроллер
+### UIKit - Embedding in Existing Controller
 
 ```swift
 import StoriesKit
@@ -212,17 +212,17 @@ class MainViewController: UIViewController {
     }
     
     private func setupStories() {
-        // Создаем Stories контроллер
+        // Create Stories controller
         let storiesViewController = Stories.build(
             groups: createStoriesGroups(),
             delegate: self
         )
         
-        // Добавляем как дочерний контроллер
+        // Add as child controller
         addChild(storiesViewController)
         storiesContainerView.addSubview(storiesViewController.view)
         
-        // Настраиваем Auto Layout
+        // Setup Auto Layout
         storiesViewController.view.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             storiesViewController.view.topAnchor.constraint(equalTo: storiesContainerView.topAnchor),
@@ -238,12 +238,12 @@ class MainViewController: UIViewController {
         return [
             StoriesGroupModel(
                 id: "user1",
-                title: "Пользователь 1",
+                title: "User 1",
                 avatarImage: .url(URL(string: "https://example.com/avatar1.jpg")!),
                 stories: [
                     StoriesPageModel(
-                        title: AttributedString("Первая история"),
-                        subtitle: AttributedString("Описание истории"),
+                        title: AttributedString("First Story"),
+                        subtitle: AttributedString("Story Description"),
                         backgroundColor: .systemBlue,
                         backgroundImage: StoriesImageModel(
                             image: .url(URL(string: "https://example.com/story1.jpg")!)
@@ -258,7 +258,7 @@ class MainViewController: UIViewController {
 // MARK: - IStoriesDelegate
 extension MainViewController: IStoriesDelegate {
     func didClose() {
-        print("Stories закрыты")
+        print("Stories closed")
     }
     
     func didOpenLink(url: URL) {
@@ -266,12 +266,12 @@ extension MainViewController: IStoriesDelegate {
     }
     
     func didOpenStory(storyId: String) {
-        print("Открыта история: \(storyId)")
+        print("Opened story: \(storyId)")
     }
 }
 ```
 
-### UIKit - Модальная презентация
+### UIKit - Modal Presentation
 
 ```swift
 import StoriesKit
@@ -285,7 +285,7 @@ class ViewController: UIViewController {
             delegate: self
         )
         
-        // Настраиваем модальную презентацию
+        // Setup modal presentation
         storiesViewController.modalPresentationStyle = .overFullScreen
         storiesViewController.modalTransitionStyle = .crossDissolve
         
@@ -293,7 +293,7 @@ class ViewController: UIViewController {
     }
     
     private func createStoriesGroups() -> [StoriesGroupModel] {
-        // Ваши группы историй
+        // Your story groups
         return []
     }
 }
@@ -308,12 +308,12 @@ extension ViewController: IStoriesDelegate {
     }
     
     func didOpenStory(storyId: String) {
-        print("Открыта история: \(storyId)")
+        print("Opened story: \(storyId)")
     }
 }
 ```
 
-### SwiftUI - Встраивание в существующий View
+### SwiftUI - Embedding in Existing View
 
 ```swift
 import StoriesKit
@@ -324,10 +324,10 @@ struct MainView: View {
     
     var body: some View {
         VStack {
-            Text("Главный экран")
+            Text("Main Screen")
                 .font(.title)
             
-            Button("Показать Stories") {
+            Button("Show Stories") {
                 showStories = true
             }
             .padding()
@@ -351,12 +351,12 @@ struct MainView: View {
         return [
             StoriesGroupModel(
                 id: "user1",
-                title: "Пользователь 1",
+                title: "User 1",
                 avatarImage: .url(URL(string: "https://example.com/avatar1.jpg")!),
                 stories: [
                     StoriesPageModel(
-                        title: AttributedString("Первая история"),
-                        subtitle: AttributedString("Описание истории"),
+                        title: AttributedString("First Story"),
+                        subtitle: AttributedString("Story Description"),
                         backgroundColor: .blue,
                         backgroundImage: StoriesImageModel(
                             image: .url(URL(string: "https://example.com/story1.jpg")!)
@@ -373,7 +373,7 @@ struct StoriesView: View {
     let onClose: () -> Void
     
     var body: some View {
-        Stories.buildSwiftUI(
+        Stories.build(
             groups: groups,
             delegate: StoriesDelegate(onClose: onClose)
         )
@@ -396,12 +396,12 @@ class StoriesDelegate: IStoriesDelegate {
     }
     
     func didOpenStory(storyId: String) {
-        print("Открыта история: \(storyId)")
+        print("Opened story: \(storyId)")
     }
 }
 ```
 
-### SwiftUI - Встраивание в NavigationView
+### SwiftUI - Embedding in NavigationView
 
 ```swift
 import StoriesKit
@@ -411,25 +411,25 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             VStack {
-                Text("Добро пожаловать!")
+                Text("Welcome!")
                     .font(.title)
                 
                 NavigationLink(destination: StoriesScreenView()) {
-                    Text("Перейти к Stories")
+                    Text("Go to Stories")
                         .padding()
                         .background(Color.blue)
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }
             }
-            .navigationTitle("Главная")
+            .navigationTitle("Home")
         }
     }
 }
 
 struct StoriesScreenView: View {
     var body: some View {
-        Stories.buildSwiftUI(
+        Stories.build(
             groups: createStoriesGroups(),
             delegate: StoriesScreenDelegate()
         )
@@ -440,12 +440,12 @@ struct StoriesScreenView: View {
         return [
             StoriesGroupModel(
                 id: "user1",
-                title: "Пользователь 1",
+                title: "User 1",
                 avatarImage: .url(URL(string: "https://example.com/avatar1.jpg")!),
                 stories: [
                     StoriesPageModel(
-                        title: AttributedString("История в навигации"),
-                        subtitle: AttributedString("Это история внутри NavigationView"),
+                        title: AttributedString("Story in Navigation"),
+                        subtitle: AttributedString("This is a story inside NavigationView"),
                         backgroundColor: .purple,
                         backgroundImage: StoriesImageModel(
                             image: .url(URL(string: "https://example.com/story1.jpg")!)
@@ -459,8 +459,8 @@ struct StoriesScreenView: View {
 
 class StoriesScreenDelegate: IStoriesDelegate {
     func didClose() {
-        // Можно использовать NavigationLink для возврата
-        print("Stories закрыты")
+        // Can use NavigationLink for return
+        print("Stories closed")
     }
     
     func didOpenLink(url: URL) {
@@ -468,12 +468,12 @@ class StoriesScreenDelegate: IStoriesDelegate {
     }
     
     func didOpenStory(storyId: String) {
-        print("Открыта история: \(storyId)")
+        print("Opened story: \(storyId)")
     }
 }
 ```
 
-### SwiftUI - Встраивание в TabView
+### SwiftUI - Embedding in TabView
 
 ```swift
 import StoriesKit
@@ -485,7 +485,7 @@ struct TabContentView: View {
             HomeView()
                 .tabItem {
                     Image(systemName: "house")
-                    Text("Главная")
+                    Text("Home")
                 }
             
             StoriesTabView()
@@ -500,7 +500,7 @@ struct TabContentView: View {
 struct StoriesTabView: View {
     var body: some View {
         NavigationView {
-            Stories.buildSwiftUI(
+            Stories.build(
                 groups: createStoriesGroups(),
                 delegate: StoriesTabDelegate()
             )
@@ -512,12 +512,12 @@ struct StoriesTabView: View {
         return [
             StoriesGroupModel(
                 id: "user1",
-                title: "Пользователь 1",
+                title: "User 1",
                 avatarImage: .url(URL(string: "https://example.com/avatar1.jpg")!),
                 stories: [
                     StoriesPageModel(
-                        title: AttributedString("Stories в табе"),
-                        subtitle: AttributedString("Это Stories внутри TabView"),
+                        title: AttributedString("Stories in Tab"),
+                        subtitle: AttributedString("This is Stories inside TabView"),
                         backgroundColor: .green,
                         backgroundImage: StoriesImageModel(
                             image: .url(URL(string: "https://example.com/story1.jpg")!)
@@ -531,7 +531,7 @@ struct StoriesTabView: View {
 
 class StoriesTabDelegate: IStoriesDelegate {
     func didClose() {
-        print("Stories в табе закрыты")
+        print("Stories in tab closed")
     }
     
     func didOpenLink(url: URL) {
@@ -539,75 +539,75 @@ class StoriesTabDelegate: IStoriesDelegate {
     }
     
     func didOpenStory(storyId: String) {
-        print("Открыта история: \(storyId)")
+        print("Opened story: \(storyId)")
     }
 }
 ```
 
-## 🎨 Кастомизация
+## 🎨 Customization
 
-### Цвета и стили
-- Настройте `backgroundColor` для фона историй
-- Используйте `AttributedString` для богатого форматирования текста
-- Настройте цвета кнопок и их скругление
+### Colors and Styles
+- Configure `backgroundColor` for story backgrounds
+- Use `AttributedString` for rich text formatting
+- Customize button colors and corner rounding
 
-### Таймеры
-- Установите `duration` для каждой истории (по умолчанию 4 секунды)
-- Таймер автоматически приостанавливается при нажатии и возобновляется при отпускании
+### Timers
+- Set `duration` for each story (default 4 seconds)
+- Timer automatically pauses on tap and resumes on release
 
-### Изображения
-- Поддержка загрузки по URL с автоматическим кэшированием
-- Placeholder изображения для лучшего UX
-- Плавные переходы между изображениями
+### Images
+- URL loading support with automatic caching
+- Placeholder images for better UX
+- Smooth transitions between images
 
-## 🏗️ Архитектура
+## 🏗️ Architecture
 
-StoriesKit построен на современной архитектуре с использованием:
+StoriesKit is built on modern architecture using:
 
-- **SwiftUI** — для UI компонентов
-- **Combine** — для реактивного программирования
-- **MVVM** — архитектурный паттерн
-- **Kingfisher** — для загрузки и кэширования изображений
+- **SwiftUI** — for UI components
+- **Combine** — for reactive programming
+- **MVVM** — architectural pattern
+- **Kingfisher** — for image loading and caching
 
-### Основные компоненты
+### Main Components
 
-- `Stories` — главный класс для создания историй
-- `ContainerView` — SwiftUI контейнер для историй
-- `ContentView` — основной контент с навигацией
-- `PageView` — отдельная страница истории
-- `ViewModel` — управление состоянием и логикой
-- `ViewController` — UIKit презентация
-- `ProgressBarView` — индикатор прогресса
-- `StoriesImageView` — отображение изображений
+- `Stories` — main class for creating stories
+- `ContainerView` — SwiftUI container for stories
+- `ContentView` — main content with navigation
+- `PageView` — individual story page
+- `ViewModel` — state management and logic
+- `ViewController` — UIKit presentation
+- `ProgressBarView` — progress indicator
+- `StoriesImageView` — image display
 
-### События и состояние
+### Events and State
 
-- `ViewEvent` — события пользователя (тапы, свайпы, таймеры)
-- `ViewState` — текущее состояние (группы, прогресс, индексы)
-- `IStoriesDelegate` — протокол для обработки событий
+- `ViewEvent` — user events (taps, swipes, timers)
+- `ViewState` — current state (groups, progress, indices)
+- `IStoriesDelegate` — protocol for event handling
 
-## 📱 Требования
+## 📱 Requirements
 
 - iOS 15.0+
 - Swift 5.9+
 - Xcode 15.0+
 
-## 🔧 Зависимости
+## 🔧 Dependencies
 
-- [Kingfisher](https://github.com/onevcat/Kingfisher) — для загрузки изображений
+- [Kingfisher](https://github.com/onevcat/Kingfisher) — for image loading
 
-## 📄 Лицензия
+## 📄 License
 
-StoriesKit распространяется под лицензией MIT. См. файл [LICENSE](LICENSE) для подробностей.
+StoriesKit is distributed under the MIT license. See the [LICENSE](LICENSE) file for details.
 
-## 🤝 Вклад в проект
+## 🤝 Contributing
 
-Мы приветствуем вклад в развитие StoriesKit! Пожалуйста, ознакомьтесь с нашими [правилами контрибуции](CONTRIBUTING.md).
+We welcome contributions to StoriesKit! Please read our [contributing guidelines](CONTRIBUTING.md).
 
-## 📞 Поддержка
+## 📞 Support
 
-Если у вас есть вопросы или предложения, создайте [issue](https://github.com/yourusername/StoriesKit/issues) или свяжитесь с нами.
+If you have questions or suggestions, create an [issue](https://github.com/yourusername/StoriesKit/issues) or contact us.
 
 ---
 
-**Сделано с ❤️ для iOS разработчиков**
+**Made with ❤️ for iOS developers**

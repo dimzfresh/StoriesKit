@@ -1,5 +1,6 @@
 import UIKit
 
+/// Model representing an individual story page
 public struct StoriesPageModel: Hashable {
     public let title: AttributedString
     public let subtitle: AttributedString?
@@ -24,6 +25,7 @@ public struct StoriesPageModel: Hashable {
         self.duration = duration
     }
 
+    /// Button configuration for story pages
     public struct Button: Hashable {
         public let title: AttributedString
         public let backgroundColor: UIColor
@@ -42,12 +44,14 @@ public struct StoriesPageModel: Hashable {
             self.actionType = actionType
         }
 
+        /// Types of button actions
         public enum ActionType: Hashable {
             case next
             case close
             case link(URL)
         }
 
+        /// Button corner styles
         public enum Corners: Hashable {
             case none
             case circle

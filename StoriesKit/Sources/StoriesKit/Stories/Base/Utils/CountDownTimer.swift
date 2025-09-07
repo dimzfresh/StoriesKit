@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 
+/// Timer utility for managing story duration and progress
 final class CountDownTimer {
     private var timer: AnyCancellable?
     private var subscriptions = Set<AnyCancellable>()

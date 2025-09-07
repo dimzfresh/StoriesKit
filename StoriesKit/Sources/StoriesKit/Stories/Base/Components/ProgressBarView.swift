@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// SwiftUI view for displaying story progress bar
 struct ProgressBarView: View {
     let progress: CGFloat
     let duration: TimeInterval
