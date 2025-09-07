@@ -204,17 +204,62 @@ import StoriesKit
 import UIKit
 
 class MainViewController: UIViewController {
-    @IBOutlet weak var storiesContainerView: UIView!
+    private let storiesContainerView = UIView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupUI()
         setupStories()
     }
     
+    private func setupUI() {
+        view.addSubview(storiesContainerView)
+        storiesContainerView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            storiesContainerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            storiesContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            storiesContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            storiesContainerView.heightAnchor.constraint(equalToConstant: 300)
+        ])
+    }
+    
     private func setupStories() {
-        // Create Stories controller
+        let stories: [StoriesPageModel] = [
+            .init(
+                title: pageTitle("Welcome to Stories"),
+                subtitle: pageSubtitle("Discover amazing content\nand share your moments\nwith the world!"),
+                backgroundColor: .systemBlue,
+                button: .init(
+                    title: actionButtonTitle("Next"),
+                    backgroundColor: .white,
+                    corners: .radius(12),
+                    actionType: .next
+                ),
+                backgroundImage: .init(image: .image(UIImage(named: "story1")))
+            ),
+            .init(
+                title: pageTitle("Interactive Features"),
+                subtitle: pageSubtitle("Tap to navigate, swipe to change\nstories, and enjoy smooth\ntransitions between content."),
+                backgroundColor: .systemPurple,
+                button: .init(
+                    title: actionButtonTitle("Got it"),
+                    backgroundColor: .white,
+                    corners: .radius(12),
+                    actionType: .close
+                ),
+                backgroundImage: .init(image: .image(UIImage(named: "story2")))
+            )
+        ]
+
         let storiesViewController = Stories.build(
-            groups: createStoriesGroups(),
+            groups: [
+                .init(
+                    id: UUID().uuidString,
+                    title: "",
+                    avatarImage: .image(nil),
+                    stories: stories
+                )
+            ],
             delegate: self
         )
         
@@ -234,24 +279,27 @@ class MainViewController: UIViewController {
         storiesViewController.didMove(toParent: self)
     }
     
-    private func createStoriesGroups() -> [StoriesGroupModel] {
-        return [
-            StoriesGroupModel(
-                id: "user1",
-                title: "User 1",
-                avatarImage: .url(URL(string: "https://example.com/avatar1.jpg")!),
-                stories: [
-                    StoriesPageModel(
-                        title: AttributedString("First Story"),
-                        subtitle: AttributedString("Story Description"),
-                        backgroundColor: .systemBlue,
-                        backgroundImage: StoriesImageModel(
-                            image: .url(URL(string: "https://example.com/story1.jpg")!)
-                        )
-                    )
-                ]
-            )
-        ]
+    // MARK: - Helper Methods
+    
+    private func pageTitle(_ text: String) -> AttributedString {
+        var attributedString = AttributedString(text)
+        attributedString.font = .systemFont(ofSize: 24, weight: .bold)
+        attributedString.foregroundColor = .white
+        return attributedString
+    }
+    
+    private func pageSubtitle(_ text: String) -> AttributedString {
+        var attributedString = AttributedString(text)
+        attributedString.font = .systemFont(ofSize: 16, weight: .medium)
+        attributedString.foregroundColor = .white.opacity(0.9)
+        return attributedString
+    }
+    
+    private func actionButtonTitle(_ text: String) -> AttributedString {
+        var attributedString = AttributedString(text)
+        attributedString.font = .systemFont(ofSize: 16, weight: .semibold)
+        attributedString.foregroundColor = .black
+        return attributedString
     }
 }
 
@@ -279,9 +327,75 @@ import UIKit
 
 class ViewController: UIViewController {
     
-    @IBAction func showStoriesButtonTapped(_ sender: UIButton) {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupUI()
+    }
+    
+    private func setupUI() {
+        view.backgroundColor = .systemBackground
+        
+        let showStoriesButton = UIButton(type: .system)
+        showStoriesButton.setTitle("Show Stories", for: .normal)
+        showStoriesButton.titleLabel?.font = .systemFont(ofSize: 18, weight: .semibold)
+        showStoriesButton.backgroundColor = .systemBlue
+        showStoriesButton.setTitleColor(.white, for: .normal)
+        showStoriesButton.layer.cornerRadius = 12
+        showStoriesButton.addTarget(self, action: #selector(showStoriesButtonTapped), for: .touchUpInside)
+        
+        view.addSubview(showStoriesButton)
+        showStoriesButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            showStoriesButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            showStoriesButton.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            showStoriesButton.widthAnchor.constraint(equalToConstant: 200),
+            showStoriesButton.heightAnchor.constraint(equalToConstant: 50)
+        ])
+    }
+    
+    @objc private func showStoriesButtonTapped() {
+        let stories: [StoriesPageModel] = [
+            .init(
+                title: pageTitle("New Features"),
+                subtitle: pageSubtitle("Discover the latest updates\nand improvements in our app.\nSwipe to see more!"),
+                backgroundColor: .systemGreen,
+                button: .init(
+                    title: actionButtonTitle("Continue"),
+                    backgroundColor: .white,
+                    corners: .radius(12),
+                    actionType: .next
+                ),
+                backgroundImage: .init(image: .image(UIImage(named: "feature1")))
+            ),
+            .init(
+                title: pageTitle("Enhanced UI"),
+                subtitle: pageSubtitle("Beautiful new interface design\nwith improved user experience\nand better performance."),
+                backgroundColor: .systemOrange,
+                button: .init(
+                    title: actionButtonTitle("Awesome"),
+                    backgroundColor: .white,
+                    corners: .radius(12),
+                    actionType: .close
+                ),
+                backgroundImage: .init(image: .image(UIImage(named: "feature2")))
+            )
+        ]
+
         let storiesViewController = Stories.build(
-            groups: createStoriesGroups(),
+            groups: [
+                .init(
+                    id: UUID().uuidString,
+                    title: "",
+                    avatarImage: .image(nil),
+                    stories: stories
+                ),
+                .init(
+                    id: UUID().uuidString,
+                    title: "",
+                    avatarImage: .image(nil),
+                    stories: stories
+                )
+            ],
             delegate: self
         )
         
@@ -292,15 +406,33 @@ class ViewController: UIViewController {
         present(storiesViewController, animated: true)
     }
     
-    private func createStoriesGroups() -> [StoriesGroupModel] {
-        // Your story groups
-        return []
+    // MARK: - Helper Methods
+    
+    private func pageTitle(_ text: String) -> AttributedString {
+        var attributedString = AttributedString(text)
+        attributedString.font = .systemFont(ofSize: 24, weight: .bold)
+        attributedString.foregroundColor = .white
+        return attributedString
+    }
+    
+    private func pageSubtitle(_ text: String) -> AttributedString {
+        var attributedString = AttributedString(text)
+        attributedString.font = .systemFont(ofSize: 16, weight: .medium)
+        attributedString.foregroundColor = .white.opacity(0.9)
+        return attributedString
+    }
+    
+    private func actionButtonTitle(_ text: String) -> AttributedString {
+        var attributedString = AttributedString(text)
+        attributedString.font = .systemFont(ofSize: 16, weight: .semibold)
+        attributedString.foregroundColor = .black
+        return attributedString
     }
 }
 
 extension ViewController: IStoriesDelegate {
     func didClose() {
-        dismiss(animated: true)
+        presentedViewController?.dismiss(animated: false)
     }
     
     func didOpenLink(url: URL) {
@@ -323,20 +455,30 @@ struct MainView: View {
     @State private var showStories = false
     
     var body: some View {
-        VStack {
-            Text("Main Screen")
-                .font(.title)
+        VStack(spacing: 20) {
+            Text("Welcome to StoriesKit")
+                .font(.largeTitle)
+                .fontWeight(.bold)
             
-            Button("Show Stories") {
+            Text("Tap the button below to see stories in action")
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+            
+            Button(action: {
                 showStories = true
+            }) {
+                Text("Show Stories")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(width: 200, height: 50)
+                    .background(Color.blue)
+                    .cornerRadius(12)
             }
-            .padding()
-            .background(Color.blue)
-            .foregroundColor(.white)
-            .cornerRadius(10)
             
             Spacer()
         }
+        .padding()
         .fullScreenCover(isPresented: $showStories) {
             StoriesView(
                 groups: createStoriesGroups(),
@@ -348,23 +490,64 @@ struct MainView: View {
     }
     
     private func createStoriesGroups() -> [StoriesGroupModel] {
-        return [
-            StoriesGroupModel(
-                id: "user1",
-                title: "User 1",
-                avatarImage: .url(URL(string: "https://example.com/avatar1.jpg")!),
-                stories: [
-                    StoriesPageModel(
-                        title: AttributedString("First Story"),
-                        subtitle: AttributedString("Story Description"),
-                        backgroundColor: .blue,
-                        backgroundImage: StoriesImageModel(
-                            image: .url(URL(string: "https://example.com/story1.jpg")!)
-                        )
-                    )
-                ]
+        let stories: [StoriesPageModel] = [
+            .init(
+                title: pageTitle("SwiftUI Integration"),
+                subtitle: pageSubtitle("Seamlessly integrate StoriesKit\ninto your SwiftUI applications\nwith just a few lines of code."),
+                backgroundColor: .blue,
+                button: .init(
+                    title: actionButtonTitle("Next"),
+                    backgroundColor: .white,
+                    corners: .radius(12),
+                    actionType: .next
+                ),
+                backgroundImage: .init(image: .image(UIImage(named: "swiftui1")))
+            ),
+            .init(
+                title: pageTitle("Beautiful Animations"),
+                subtitle: pageSubtitle("Enjoy smooth transitions\nand beautiful animations\nthat make your content shine."),
+                backgroundColor: .purple,
+                button: .init(
+                    title: actionButtonTitle("Got it"),
+                    backgroundColor: .white,
+                    corners: .radius(12),
+                    actionType: .close
+                ),
+                backgroundImage: .init(image: .image(UIImage(named: "swiftui2")))
             )
         ]
+        
+        return [
+            StoriesGroupModel(
+                id: UUID().uuidString,
+                title: "",
+                avatarImage: .image(nil),
+                stories: stories
+            )
+        ]
+    }
+    
+    // MARK: - Helper Methods
+    
+    private func pageTitle(_ text: String) -> AttributedString {
+        var attributedString = AttributedString(text)
+        attributedString.font = .systemFont(ofSize: 24, weight: .bold)
+        attributedString.foregroundColor = .white
+        return attributedString
+    }
+    
+    private func pageSubtitle(_ text: String) -> AttributedString {
+        var attributedString = AttributedString(text)
+        attributedString.font = .systemFont(ofSize: 16, weight: .medium)
+        attributedString.foregroundColor = .white.opacity(0.9)
+        return attributedString
+    }
+    
+    private func actionButtonTitle(_ text: String) -> AttributedString {
+        var attributedString = AttributedString(text)
+        attributedString.font = .systemFont(ofSize: 16, weight: .semibold)
+        attributedString.foregroundColor = .black
+        return attributedString
     }
 }
 
@@ -410,18 +593,26 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         NavigationView {
-            VStack {
-                Text("Welcome!")
-                    .font(.title)
+            VStack(spacing: 30) {
+                Text("Welcome to StoriesKit")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                
+                Text("Navigate to stories using the button below")
+                    .font(.body)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
                 
                 NavigationLink(destination: StoriesScreenView()) {
                     Text("Go to Stories")
-                        .padding()
-                        .background(Color.blue)
+                        .font(.headline)
                         .foregroundColor(.white)
-                        .cornerRadius(10)
+                        .frame(width: 200, height: 50)
+                        .background(Color.blue)
+                        .cornerRadius(12)
                 }
             }
+            .padding()
             .navigationTitle("Home")
         }
     }
@@ -437,23 +628,64 @@ struct StoriesScreenView: View {
     }
     
     private func createStoriesGroups() -> [StoriesGroupModel] {
-        return [
-            StoriesGroupModel(
-                id: "user1",
-                title: "User 1",
-                avatarImage: .url(URL(string: "https://example.com/avatar1.jpg")!),
-                stories: [
-                    StoriesPageModel(
-                        title: AttributedString("Story in Navigation"),
-                        subtitle: AttributedString("This is a story inside NavigationView"),
-                        backgroundColor: .purple,
-                        backgroundImage: StoriesImageModel(
-                            image: .url(URL(string: "https://example.com/story1.jpg")!)
-                        )
-                    )
-                ]
+        let stories: [StoriesPageModel] = [
+            .init(
+                title: pageTitle("Navigation Integration"),
+                subtitle: pageSubtitle("Stories work seamlessly\nwithin NavigationView\nand other SwiftUI containers."),
+                backgroundColor: .purple,
+                button: .init(
+                    title: actionButtonTitle("Continue"),
+                    backgroundColor: .white,
+                    corners: .radius(12),
+                    actionType: .next
+                ),
+                backgroundImage: .init(image: .image(UIImage(named: "navigation1")))
+            ),
+            .init(
+                title: pageTitle("Smooth Transitions"),
+                subtitle: pageSubtitle("Enjoy beautiful animations\nand smooth transitions\nbetween story pages."),
+                backgroundColor: .indigo,
+                button: .init(
+                    title: actionButtonTitle("Perfect"),
+                    backgroundColor: .white,
+                    corners: .radius(12),
+                    actionType: .close
+                ),
+                backgroundImage: .init(image: .image(UIImage(named: "navigation2")))
             )
         ]
+        
+        return [
+            StoriesGroupModel(
+                id: UUID().uuidString,
+                title: "",
+                avatarImage: .image(nil),
+                stories: stories
+            )
+        ]
+    }
+    
+    // MARK: - Helper Methods
+    
+    private func pageTitle(_ text: String) -> AttributedString {
+        var attributedString = AttributedString(text)
+        attributedString.font = .systemFont(ofSize: 24, weight: .bold)
+        attributedString.foregroundColor = .white
+        return attributedString
+    }
+    
+    private func pageSubtitle(_ text: String) -> AttributedString {
+        var attributedString = AttributedString(text)
+        attributedString.font = .systemFont(ofSize: 16, weight: .medium)
+        attributedString.foregroundColor = .white.opacity(0.9)
+        return attributedString
+    }
+    
+    private func actionButtonTitle(_ text: String) -> AttributedString {
+        var attributedString = AttributedString(text)
+        attributedString.font = .systemFont(ofSize: 16, weight: .semibold)
+        attributedString.foregroundColor = .black
+        return attributedString
     }
 }
 
@@ -497,6 +729,22 @@ struct TabContentView: View {
     }
 }
 
+struct HomeView: View {
+    var body: some View {
+        VStack {
+            Text("Home Tab")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+            
+            Text("Switch to Stories tab to see StoriesKit in action")
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding()
+        }
+    }
+}
+
 struct StoriesTabView: View {
     var body: some View {
         NavigationView {
@@ -509,23 +757,64 @@ struct StoriesTabView: View {
     }
     
     private func createStoriesGroups() -> [StoriesGroupModel] {
-        return [
-            StoriesGroupModel(
-                id: "user1",
-                title: "User 1",
-                avatarImage: .url(URL(string: "https://example.com/avatar1.jpg")!),
-                stories: [
-                    StoriesPageModel(
-                        title: AttributedString("Stories in Tab"),
-                        subtitle: AttributedString("This is Stories inside TabView"),
-                        backgroundColor: .green,
-                        backgroundImage: StoriesImageModel(
-                            image: .url(URL(string: "https://example.com/story1.jpg")!)
-                        )
-                    )
-                ]
+        let stories: [StoriesPageModel] = [
+            .init(
+                title: pageTitle("Tab Integration"),
+                subtitle: pageSubtitle("Stories work perfectly\nwithin TabView and other\nSwiftUI navigation components."),
+                backgroundColor: .green,
+                button: .init(
+                    title: actionButtonTitle("Next"),
+                    backgroundColor: .white,
+                    corners: .radius(12),
+                    actionType: .next
+                ),
+                backgroundImage: .init(image: .image(UIImage(named: "tab1")))
+            ),
+            .init(
+                title: pageTitle("Cross-Platform"),
+                subtitle: pageSubtitle("Same StoriesKit works\non both UIKit and SwiftUI\nwith consistent behavior."),
+                backgroundColor: .teal,
+                button: .init(
+                    title: actionButtonTitle("Amazing"),
+                    backgroundColor: .white,
+                    corners: .radius(12),
+                    actionType: .close
+                ),
+                backgroundImage: .init(image: .image(UIImage(named: "tab2")))
             )
         ]
+        
+        return [
+            StoriesGroupModel(
+                id: UUID().uuidString,
+                title: "",
+                avatarImage: .image(nil),
+                stories: stories
+            )
+        ]
+    }
+    
+    // MARK: - Helper Methods
+    
+    private func pageTitle(_ text: String) -> AttributedString {
+        var attributedString = AttributedString(text)
+        attributedString.font = .systemFont(ofSize: 24, weight: .bold)
+        attributedString.foregroundColor = .white
+        return attributedString
+    }
+    
+    private func pageSubtitle(_ text: String) -> AttributedString {
+        var attributedString = AttributedString(text)
+        attributedString.font = .systemFont(ofSize: 16, weight: .medium)
+        attributedString.foregroundColor = .white.opacity(0.9)
+        return attributedString
+    }
+    
+    private func actionButtonTitle(_ text: String) -> AttributedString {
+        var attributedString = AttributedString(text)
+        attributedString.font = .systemFont(ofSize: 16, weight: .semibold)
+        attributedString.foregroundColor = .black
+        return attributedString
     }
 }
 
