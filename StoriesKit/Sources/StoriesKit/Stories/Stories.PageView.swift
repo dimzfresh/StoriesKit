@@ -1,8 +1,8 @@
+import Kingfisher
 import SwiftUI
 
 extension Stories {
-    /// Individual story page view with content and interactions
-    struct PageView: View {
+    struct PageView: SwiftUI.View {
         let group: StoriesGroupModel
         let currentPage: StoriesPageModel?
         let verticalOffset: CGFloat
@@ -11,14 +11,11 @@ extension Stories {
         let isCurrentGroup: Bool
         let onTapPrevious: () -> Void
         let onTapNext: () -> Void
+        let avatarNamespace: Namespace.ID
 
         @Environment(\.safeAreaInsets) private var safeAreaInsets
 
-        private var isSmallScreen: Bool {
-            UIScreen.main.bounds.width == 320
-        }
-
-        var body: some View {
+        var body: some SwiftUI.View {
             ZStack {
                 GeometryReader { geometry in
                     ZStack {
@@ -38,11 +35,27 @@ extension Stories {
             }
         }
 
-        private func storyPageView(_ model: StoriesPageModel) -> some View {
+        private func storyPageView(_ model: StoriesPageModel) -> some SwiftUI.View {
             ZStack {
                 Color(model.backgroundColor)
                     .overlay {
-                        StoriesImageView(model: model.backgroundImage)
+                        StoriesMediaView(
+                            mediaModel: model.mediaSource,
+                            placeholder: {
+                                if let placeholder = model.mediaSource.placeholder {
+                                    Image(uiImage: placeholder)
+                                        .resizable()
+                                        .scaledToFill()
+                                }
+                            },
+                            failure: {
+                                if let placeholder = model.mediaSource.placeholder {
+                                    Image(uiImage: placeholder)
+                                        .resizable()
+                                        .scaledToFill()
+                                }
+                            }
+                        )
                     }
                     .overlay {
                         tapAreasOverlay()
@@ -50,12 +63,15 @@ extension Stories {
                     .overlay {
                         contentOverlay(for: model)
                     }
-                    .clipped()
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                     .scaleEffect(getScaleEffect())
+                    .padding(.top, safeAreaInsets.top)
+                    .padding(.bottom, safeAreaInsets.bottom + 16)
+                    .matchedGeometryEffect(id: group.id, in: avatarNamespace)
             }
         }
         
-        private func progressBarsView() -> some View {
+        private func progressBarsView() -> some SwiftUI.View {
             HStack(spacing: 4) {
                 ForEach(progressBars, id: \.self) { data in
                     ProgressBarView(
@@ -88,12 +104,12 @@ extension Stories {
         ) -> CGFloat {
             switch corners {
             case .none: 0
-            case .circle: (isSmallScreen ? 40 : 50) * 0.5
+            case .circle: 50 * 0.5
             case let .radius(radius): radius
             }
         }
         
-        private func tapArea(isLeftSide: Bool) -> some View {
+        private func tapArea(isLeftSide: Bool) -> some SwiftUI.View {
             Rectangle()
                 .fill(.clear)
                 .contentShape(Rectangle())
@@ -107,7 +123,7 @@ extension Stories {
         
         // MARK: - Helper Methods
         
-        private func tapAreasOverlay() -> some View {
+        private func tapAreasOverlay() -> some SwiftUI.View {
             HStack(spacing: 0) {
                 tapArea(isLeftSide: true)
                 tapArea(isLeftSide: false)
@@ -115,11 +131,17 @@ extension Stories {
             .ignoresSafeArea()
         }
         
-        private func contentOverlay(for model: StoriesPageModel) -> some View {
+        private func contentOverlay(for model: StoriesPageModel) -> some SwiftUI.View {
             VStack(alignment: .center, spacing: 0) {
-                progressBarsView()
-                    .padding(.top, safeAreaInsets.top + 12)
-                    .padding(.horizontal, 10)
+                VStack(spacing: 0) {
+                    progressBarsView()
+                        .padding(.top, 12)
+                        .padding(.horizontal, 10)
+                    
+                    headerView()
+                        .padding(.top, 8)
+                        .padding(.horizontal, 16)
+                }
 
                 Text(model.title)
                     .lineLimit(nil)
@@ -143,12 +165,72 @@ extension Stories {
             }
         }
         
-        private func buttonView(for button: StoriesPageModel.Button) -> some View {
+        private func headerView() -> some SwiftUI.View {
+            HStack(spacing: 0) {
+                HStack(spacing: 12) {
+                    avatarView()
+                    usernameView()
+                }
+                
+                Spacer()
+                
+                closeButton()
+            }
+        }
+        
+        private func avatarView() -> some SwiftUI.View {
+            Group {
+                switch group.avatarImage {
+                case let .local(image):
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 32, height: 32)
+                        .clipShape(Circle())
+                case let .remote(url):
+                    KFImage(url)
+                        .placeholder {
+                            Circle()
+                                .fill(.gray.opacity(0.3))
+                                .overlay(
+                                    Image(systemName: "person.fill")
+                                        .foregroundColor(.gray)
+                                )
+                        }
+                        .cacheOriginalImage()
+                        .diskCacheExpiration(.seconds(600))
+                        .resizable()
+                        .frame(width: 32, height: 32)
+                        .clipShape(Circle())
+                        .scaledToFill()
+                }
+            }
+        }
+        
+        private func usernameView() -> some SwiftUI.View {
+            Text(group.title)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.white)
+                .lineLimit(1)
+        }
+        
+        private func closeButton() -> some SwiftUI.View {
+            Button {
+                onButtonAction(.close)
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundColor(.white)
+                    .frame(width: 32, height: 32)
+            }
+        }
+        
+        private func buttonView(for button: StoriesPageModel.Button) -> some SwiftUI.View {
             Button {
                 onButtonAction(button.actionType)
             } label: {
                 Text(button.title)
-                    .frame(width: 148, height: isSmallScreen ? 40 : 50)
+                    .frame(width: 148, height: 50)
             }
             .background(Color(button.backgroundColor))
             .clipShape(RoundedRectangle(cornerRadius: getAdaptiveCornerRadius(button.corners)))

@@ -4,8 +4,11 @@ import SwiftUI
 extension Stories {
     /// UIKit view controller for presenting Stories
     final class ViewController: AnyHostingController {
-        init(viewModel: ViewModel) {
-            super.init(rootView: ContentView(viewModel: viewModel))
+        init(viewModel: ViewModel, avatarNamespace: Namespace.ID) {
+            super.init(rootView: Stories.View(
+                viewModel: viewModel,
+                avatarNamespace: avatarNamespace
+            ))
             setupView()
         }
         

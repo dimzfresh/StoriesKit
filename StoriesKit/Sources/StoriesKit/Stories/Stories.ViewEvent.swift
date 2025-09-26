@@ -12,7 +12,6 @@ extension Stories {
         case didOpenStory(String)
         case didPauseTimer
         case didResumeTimer
-        case didTapButtonClose
         case didTapButtonLink(URL)
     }
 }

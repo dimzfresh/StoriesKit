@@ -1,10 +1,3 @@
-//
-//  StoriesExampleApp.swift
-//  StoriesExample
-//
-//  Created by Dimitrii Ziablikov on 07.09.2025.
-//
-
 import SwiftUI
 
 @main

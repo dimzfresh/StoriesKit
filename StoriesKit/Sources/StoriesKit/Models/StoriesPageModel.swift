@@ -6,7 +6,7 @@ public struct StoriesPageModel: Hashable {
     public let subtitle: AttributedString?
     public let backgroundColor: UIColor
     public let button: StoriesPageModel.Button?
-    public let backgroundImage: StoriesImageModel
+    public let mediaSource: StoriesMediaModel
     public let duration: TimeInterval
     
     public init(
@@ -14,14 +14,14 @@ public struct StoriesPageModel: Hashable {
         subtitle: AttributedString?,
         backgroundColor: UIColor,
         button: StoriesPageModel.Button? = nil,
-        backgroundImage: StoriesImageModel,
+        mediaSource: StoriesMediaModel,
         duration: TimeInterval = 4.0
     ) {
         self.title = title
         self.subtitle = subtitle
         self.backgroundColor = backgroundColor
         self.button = button
-        self.backgroundImage = backgroundImage
+        self.mediaSource = mediaSource
         self.duration = duration
     }
 

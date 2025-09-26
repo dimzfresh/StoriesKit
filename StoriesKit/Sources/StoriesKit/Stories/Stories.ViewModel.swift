@@ -6,6 +6,12 @@ protocol IStoriesViewModel: ObservableObject {
     var state: Stories.ViewState { get }
 
     func send(_ event: Stories.ViewEvent)
+
+    init(
+        groups: [StoriesGroupModel],
+        delegate: IStoriesDelegate?,
+        selectedGroup: StoriesGroupModel?
+    )
 }
 
 extension Stories {
@@ -17,19 +23,22 @@ extension Stories {
         private var subscriptions = Set<AnyCancellable>()
 
         private var timer: CountDownTimer?
-        private weak var delegate: IStoriesDelegate?
+        private let delegate: IStoriesDelegate?
 
         init(
             groups: [StoriesGroupModel],
-            delegate: IStoriesDelegate? = nil
+            delegate: IStoriesDelegate? = nil,
+            selectedGroup: StoriesGroupModel? = nil
         ) {
+            let initialGroupIndex = groups.firstIndex(where: { $0.id == selectedGroup?.id }) ?? 0
+
             self.state = .init(
                 groups: groups,
                 progressBar: .init(
                     progress: 0,
-                    duration: groups.first?.stories.first?.duration ?? Constants.defaultStoryDuration
+                    duration: groups[initialGroupIndex].stories.first?.duration ?? 5
                 ),
-                groupIndex: 0,
+                groupIndex: initialGroupIndex,
                 pageIndex: 0,
                 isPaused: false
             )
@@ -86,8 +95,6 @@ private extension Stories.ViewModel {
             timer?.pause()
         case .didResumeTimer:
             resumeCurrentStoryTimer()
-        case .didTapButtonClose:
-            delegate?.didClose()
         case let .didTapButtonLink(url):
             delegate?.didOpenLink(url: url)
         }
@@ -97,11 +104,13 @@ private extension Stories.ViewModel {
 
     private func startCurrentStoryTimer() {
         guard let currentStory = getCurrentStory() else { return }
+
         timer?.start(duration: currentStory.duration)
     }
 
     private func resumeCurrentStoryTimer() {
         guard let currentStory = getCurrentStory() else { return }
+
         timer?.resume(duration: currentStory.duration)
     }
 
@@ -163,7 +172,7 @@ private extension Stories.ViewModel {
             groups: state.groups,
             progressBar: .init(
                 progress: 0,
-                duration: firstPage?.duration ?? Constants.defaultStoryDuration
+                duration: firstPage?.duration ?? 5
             ),
             groupIndex: groupIndex,
             pageIndex: 0,
@@ -254,8 +263,4 @@ private extension Stories.ViewModel {
         )
         startCurrentStoryTimer()
     }
-}
-
-private enum Constants {
-    static let defaultStoryDuration: Double = 4.0
 }

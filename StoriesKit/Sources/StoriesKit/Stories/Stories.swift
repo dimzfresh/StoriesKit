@@ -10,15 +10,21 @@ public enum Stories {
     /// - Returns: UIViewController for presentation
     public static func build(
         groups: [StoriesGroupModel],
-        delegate: IStoriesDelegate? = nil
+        avatarNamespace: Namespace.ID,
+        delegate: IStoriesDelegate? = nil,
+        selectedGroup: StoriesGroupModel? = nil
     ) -> UIViewController {
         let viewModel = ViewModel(
             groups: groups,
-            delegate: delegate
+            delegate: delegate,
+            selectedGroup: selectedGroup
         )
+
         let viewController = ViewController(
-            viewModel: viewModel
+            viewModel: viewModel,
+            avatarNamespace: avatarNamespace
         )
+
         return viewController
     }
     
@@ -29,11 +35,19 @@ public enum Stories {
     /// - Returns: Pure SwiftUI View for embedding in SwiftUI hierarchy
     public static func build(
         groups: [StoriesGroupModel],
-        delegate: IStoriesDelegate? = nil
-    ) -> some View {
-        ContainerView(
+        avatarNamespace: Namespace.ID,
+        delegate: IStoriesDelegate? = nil,
+        selectedGroup: StoriesGroupModel? = nil
+    ) -> some SwiftUI.View {
+        let viewModel = ViewModel(
             groups: groups,
-            delegate: delegate
+            delegate: delegate,
+            selectedGroup: selectedGroup
+        )
+
+        return Stories.View(
+            viewModel: viewModel,
+            avatarNamespace: avatarNamespace
         )
     }
 }

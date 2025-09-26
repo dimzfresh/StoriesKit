@@ -4,14 +4,14 @@ import Foundation
 public struct StoriesGroupModel: Hashable, Identifiable {
     public let id: String
     public let title: String
-    public let avatarImage: StoriesImageModel.ImageSource
+    public let avatarImage: StoriesMediaModel.MediaSource.ImageType
     public let stories: [StoriesPageModel]
     public let isViewed: Bool
     
     public init(
         id: String,
         title: String,
-        avatarImage: StoriesImageModel.ImageSource,
+        avatarImage: StoriesMediaModel.MediaSource.ImageType,
         stories: [StoriesPageModel],
         isViewed: Bool = false
     ) {
@@ -21,4 +21,11 @@ public struct StoriesGroupModel: Hashable, Identifiable {
         self.stories = stories
         self.isViewed = isViewed
     }
+
+    public static let empty = Self(
+        id: "",
+        title: "",
+        avatarImage: .local(.init()),
+        stories: []
+    )
 }
