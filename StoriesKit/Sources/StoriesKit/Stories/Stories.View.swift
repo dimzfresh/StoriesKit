@@ -60,7 +60,7 @@ extension Stories {
             ZStack {
                 ScrollViewReader { proxy in
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 0) {
+                        LazyHStack(spacing: 0) {
                             ForEach(Array(viewModel.state.groups.enumerated()), id: \.element.id) { index, group in
                                 groupView(
                                     group: group,

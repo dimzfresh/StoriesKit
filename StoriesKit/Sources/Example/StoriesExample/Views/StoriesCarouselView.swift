@@ -63,7 +63,8 @@ struct StoryGroupItemView: View {
                     avatarImageView
                         .matchedGeometryEffect(
                             id: group.id,
-                            in: avatarNamespace
+                            in: avatarNamespace,
+                            isSource: group.id == storiesVM.animatableModel.selectedGroupId
                         )
                 }
 
