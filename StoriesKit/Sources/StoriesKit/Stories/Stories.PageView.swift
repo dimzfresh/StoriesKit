@@ -65,10 +65,11 @@ extension Stories {
                         contentOverlay(for: model)
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .matchedGeometryEffect(
-                        id: animatableModel.selectedGroupId,
-                        in: avatarNamespace
-                    )
+                    .modifier(MatchedGeometryModifier(
+                        isCurrentGroup: isCurrentGroup,
+                        selectedGroupId: animatableModel.selectedGroupId,
+                        avatarNamespace: avatarNamespace
+                    ))
                     .scaleEffect(getScaleEffect())
                     .padding(.top, safeAreaInsets.top)
                     .padding(.bottom, safeAreaInsets.bottom + 16)
@@ -255,5 +256,23 @@ extension Stories {
         static let rotationAngle: CGFloat = 45
         static let scaleThreshold: CGFloat = 0.3
         static let minScale: CGFloat = 0.85
+    }
+}
+
+struct MatchedGeometryModifier: ViewModifier {
+    let isCurrentGroup: Bool
+    let selectedGroupId: String
+    let avatarNamespace: Namespace.ID
+    
+    func body(content: Content) -> some View {
+        if isCurrentGroup, !selectedGroupId.isEmpty {
+            content
+                .matchedGeometryEffect(
+                    id: selectedGroupId,
+                    in: avatarNamespace
+                )
+        } else {
+            content
+        }
     }
 }

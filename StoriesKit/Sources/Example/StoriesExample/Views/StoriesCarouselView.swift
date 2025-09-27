@@ -30,11 +30,11 @@ struct StoriesCarouselView: View {
                 .onAppear {
                     scrollViewProxy = proxy
                 }
-                .onChange(of: storiesVM.selectedGroup) { group in
-                    guard group != .empty else { return }
+                .onChange(of: storiesVM.animatableModel.selectedGroupId) { groupId in
+                    guard !groupId.isEmpty else { return }
 
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        proxy.scrollTo(group.id, anchor: .center)
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        proxy.scrollTo(groupId, anchor: .center)
                     }
                 }
             }
@@ -51,51 +51,31 @@ struct StoryGroupItemView: View {
     
     var body: some View {
         Group {
-            if storiesVM.animatableModel.selectedGroupId == group.id && storiesVM.isExpanded {
-                VStack(spacing: 8) {
-                    ZStack {
-                        Circle()
-                            .stroke(
-                                group.isViewed ? .gray.opacity(0.5) : .blue,
-                                lineWidth: 3
-                            )
-                            .frame(width: avatarSize + 6, height: avatarSize + 6)
-                    }
+            VStack(spacing: 8) {
+                ZStack {
+                    Circle()
+                        .stroke(
+                            group.isViewed ? .gray.opacity(0.5) : .blue,
+                            lineWidth: 3
+                        )
+                        .frame(width: avatarSize + 6, height: avatarSize + 6)
 
-                    Text(group.title)
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundColor(.primary)
-                        .lineLimit(1)
-                        .frame(width: avatarSize + 6, height: titleHeight)
+                    avatarImageView
+                        .matchedGeometryEffect(
+                            id: group.id,
+                            in: avatarNamespace
+                        )
                 }
-                .frame(width: avatarSize + 6, height: titleHeight + 8 + avatarSize + 12)
-            } else {
-                VStack(spacing: 8) {
-                    ZStack {
-                        Circle()
-                            .stroke(
-                                group.isViewed ? .gray.opacity(0.5) : .blue,
-                                lineWidth: 3
-                            )
-                            .frame(width: avatarSize + 6, height: avatarSize + 6)
 
-                        avatarImageView
-                            .matchedGeometryEffect(
-                                id: group.id,
-                                in: avatarNamespace
-                            )
-                    }
-
-                    Text(group.title)
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundColor(.primary)
-                        .lineLimit(1)
-                        .frame(width: avatarSize + 6, height: titleHeight)
-                }
-                .frame(width: avatarSize + 6, height: titleHeight + 8 + avatarSize + 12)
-                .onTapGesture {
-                    handleTap()
-                }
+                Text(group.title)
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+                    .frame(width: avatarSize + 6, height: titleHeight)
+            }
+            .frame(width: avatarSize + 6, height: titleHeight + 8 + avatarSize + 12)
+            .onTapGesture {
+                handleTap()
             }
         }
         .id(group.id)
@@ -132,7 +112,7 @@ struct StoryGroupItemView: View {
     private func handleTap() {
         if storiesVM.selectedGroup == .empty {
             storiesVM.selectedGroup = group
-            withAnimation(.interactiveSpring(response: 0.3, dampingFraction: 0.8, blendDuration: 0.8)) {
+            withAnimation(.easeInOut(duration: 0.25)) {
                 storiesVM.animatableModel.selectedGroupId = group.id
                 storiesVM.isExpanded = true
             }

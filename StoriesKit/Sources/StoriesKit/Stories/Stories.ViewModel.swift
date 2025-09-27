@@ -17,7 +17,7 @@ protocol IStoriesViewModel: ObservableObject {
 extension Stories {
     /// View model for managing Stories state and logic
     final class ViewModel: IStoriesViewModel {
-        @Published var state: ViewState
+        @Published private(set) var state: ViewState
 
         private let viewEvent = PassthroughSubject<ViewEvent, Never>()
         private var subscriptions = Set<AnyCancellable>()

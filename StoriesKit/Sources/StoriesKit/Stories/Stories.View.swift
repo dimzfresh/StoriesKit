@@ -37,6 +37,10 @@ extension Stories {
                 }
                 .ignoresSafeArea()
             }
+            .transition(.asymmetric(
+                insertion: .scale.combined(with: .opacity),
+                removal: .opacity
+            ))
             .onAppear {
                 viewModel.send(.didAppear)
             }
@@ -56,7 +60,7 @@ extension Stories {
             ZStack {
                 ScrollViewReader { proxy in
                     ScrollView(.horizontal, showsIndicators: false) {
-                        LazyHStack(spacing: 0) {
+                        HStack(spacing: 0) {
                             ForEach(Array(viewModel.state.groups.enumerated()), id: \.element.id) { index, group in
                                 groupView(
                                     group: group,
@@ -156,13 +160,7 @@ extension Stories {
             let animationDuration = Constants.animationDuration
 
             if translation > threshold || velocity > dismissVelocity {
-                Task {
-                    withAnimation(.easeInOut(duration: animationDuration)) {
-                        verticalDragOffset = UIScreen.main.bounds.height * 0.3
-                    }
-
-                    viewModel.send(.didDismiss)
-                }
+                viewModel.send(.didDismiss)
             } else {
                 withAnimation(.easeInOut(duration: Constants.returnAnimationDuration)) {
                     verticalDragOffset = 0
@@ -228,7 +226,10 @@ extension Stories {
 
         private func handleScrollViewAppear(proxy: ScrollViewProxy) {
             scrollViewProxy = proxy
-            proxy.scrollTo(viewModel.state.groupIndex, anchor: .center)
+
+            Task {
+                proxy.scrollTo(viewModel.state.groupIndex, anchor: .center)
+            }
         }
 
         private func handleGroupIndexChange(
@@ -363,10 +364,15 @@ extension Stories {
             totalGroups: Int
         ) {
             if translation > 0 && currentIndex > 0 {
-                viewModel.send(.didSwitchGroup(currentIndex - 1))
+                let index = currentIndex - 1
+                viewModel.send(.didSwitchGroup(index))
+                animatableModel.selectedGroupId = viewModel.state.groups[index].id
             } else if translation < 0 && currentIndex < totalGroups - 1 {
-                viewModel.send(.didSwitchGroup(currentIndex + 1))
+                let index = currentIndex + 1
+                viewModel.send(.didSwitchGroup(index))
+                animatableModel.selectedGroupId = viewModel.state.groups[index].id
             } else {
+                animatableModel.selectedGroupId = viewModel.state.groups[currentIndex].id
                 scrollToCurrentGroup(swipeDirection: translation > 0 ? .right : .left)
             }
         }
