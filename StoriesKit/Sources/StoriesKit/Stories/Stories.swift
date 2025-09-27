@@ -10,6 +10,7 @@ public enum Stories {
     /// - Returns: UIViewController for presentation
     public static func build(
         groups: [StoriesGroupModel],
+        animatableModel: StoriesAnimatableModel,
         avatarNamespace: Namespace.ID,
         delegate: IStoriesDelegate? = nil,
         selectedGroup: StoriesGroupModel? = nil
@@ -22,6 +23,7 @@ public enum Stories {
 
         let viewController = ViewController(
             viewModel: viewModel,
+            animatableModel: animatableModel,
             avatarNamespace: avatarNamespace
         )
 
@@ -35,6 +37,7 @@ public enum Stories {
     /// - Returns: Pure SwiftUI View for embedding in SwiftUI hierarchy
     public static func build(
         groups: [StoriesGroupModel],
+        animatableModel: StoriesAnimatableModel,
         avatarNamespace: Namespace.ID,
         delegate: IStoriesDelegate? = nil,
         selectedGroup: StoriesGroupModel? = nil
@@ -47,6 +50,7 @@ public enum Stories {
 
         return Stories.View(
             viewModel: viewModel,
+            animatableModel: animatableModel,
             avatarNamespace: avatarNamespace
         )
     }

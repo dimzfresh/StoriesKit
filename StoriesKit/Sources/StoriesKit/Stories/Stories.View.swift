@@ -5,12 +5,14 @@ extension Stories {
     /// Main content view for Stories with navigation and gesture handling
     struct `View`<ViewModel: ObservableObject>: SwiftUI.View where ViewModel: IStoriesViewModel {
         @StateObject private var viewModel: ViewModel
-        private let avatarNamespace: Namespace.ID
+        @StateObject private var animatableModel: StoriesAnimatableModel
 
         @State private var verticalDragOffset: CGFloat = 0
         @State private var dragDirection: DragDirection?
         @State private var isScrolling = false
         @State private var scrollViewProxy: ScrollViewProxy?
+
+        let avatarNamespace: Namespace.ID
 
         /// Direction of drag gesture
         enum DragDirection {
@@ -42,9 +44,11 @@ extension Stories {
 
         public init(
             viewModel: ViewModel,
+            animatableModel: StoriesAnimatableModel,
             avatarNamespace: Namespace.ID
         ) {
             _viewModel = .init(wrappedValue: viewModel)
+            _animatableModel = .init(wrappedValue: animatableModel)
             self.avatarNamespace = avatarNamespace
         }
 
@@ -109,7 +113,8 @@ extension Stories {
                 onTapNext: {
                     viewModel.send(.didTapNext)
                 },
-                avatarNamespace: avatarNamespace
+                avatarNamespace: avatarNamespace,
+                animatableModel: animatableModel
             )
         }
 

@@ -12,6 +12,7 @@ extension Stories {
         let onTapPrevious: () -> Void
         let onTapNext: () -> Void
         let avatarNamespace: Namespace.ID
+        @ObservedObject var animatableModel: StoriesAnimatableModel
 
         @Environment(\.safeAreaInsets) private var safeAreaInsets
 
@@ -64,10 +65,13 @@ extension Stories {
                         contentOverlay(for: model)
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .matchedGeometryEffect(
+                        id: animatableModel.selectedGroupId,
+                        in: avatarNamespace
+                    )
                     .scaleEffect(getScaleEffect())
                     .padding(.top, safeAreaInsets.top)
                     .padding(.bottom, safeAreaInsets.bottom + 16)
-                    .matchedGeometryEffect(id: group.id, in: avatarNamespace)
             }
         }
         

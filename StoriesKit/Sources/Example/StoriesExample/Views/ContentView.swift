@@ -1,9 +1,17 @@
 import SwiftUI
 import StoriesKit
 
+final class StoriesViewModel: ObservableObject {
+    @Published var dataModel = StoriesDataModel()
+    @Published var selectedGroup: StoriesGroupModel = .empty
+    @Published var isExpanded = false
+
+    @Published var animatableModel = StoriesAnimatableModel()
+}
+
 struct ContentView: View, IStoriesDelegate {
-    @StateObject private var dataModel = StoriesDataModel()
-    @State private var selectedGroup: StoriesGroupModel = .empty
+    @ObservedObject private var storiesVM = StoriesViewModel()
+
     @Namespace private var avatarNamespace
 
     var body: some View {
@@ -17,17 +25,21 @@ struct ContentView: View, IStoriesDelegate {
             .background(Color(.systemGroupedBackground))
         }
         .overlay {
-            if selectedGroup != .empty {
+            if storiesVM.isExpanded {
                 Stories.build(
-                    groups: dataModel.storiesGroups,
+                    groups: storiesVM.dataModel.storiesGroups,
+                    animatableModel: storiesVM.animatableModel,
                     avatarNamespace: avatarNamespace,
                     delegate: self,
-                    selectedGroup: selectedGroup
+                    selectedGroup: storiesVM.selectedGroup
                 )
                 .ignoresSafeArea()
-                .transition(.opacity)
             }
         }
+    }
+
+    init() {
+        _avatarNamespace = .init()
     }
 
     private var storiesCarouselView: some View {
@@ -47,9 +59,8 @@ struct ContentView: View, IStoriesDelegate {
             .padding(.horizontal, 16)
 
             StoriesCarouselView(
-                storiesGroups: dataModel.storiesGroups,
-                avatarNamespace: avatarNamespace,
-                selectedGroup: $selectedGroup
+                storiesVM: storiesVM,
+                avatarNamespace: avatarNamespace
             )
         }
         .padding(.vertical, 16)
@@ -74,16 +85,25 @@ struct ContentView: View, IStoriesDelegate {
             }
             .padding(.horizontal, 16)
 
-            RandomImagesView(images: dataModel.randomImages)
+            RandomImagesView(images: storiesVM.dataModel.randomImages)
         }
         .padding(.top, 8)
         .background(Color(.systemBackground))
     }
 
-    func didClose() {
+    private func dismissStories() {
         withAnimation(.easeInOut(duration: 0.3)) {
-            selectedGroup = .empty
+            storiesVM.isExpanded = false
+            storiesVM.selectedGroup = .empty
         }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            storiesVM.animatableModel.selectedGroupId = ""
+        }
+    }
+    
+    func didClose() {
+        dismissStories()
     }
 
     func didOpenLink(url: URL) {}

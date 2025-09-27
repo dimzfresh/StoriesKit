@@ -3,28 +3,26 @@ import SwiftUI
 import StoriesKit
 
 struct StoriesCarouselView: View {
-    let storiesGroups: [StoriesGroupModel]
+    @ObservedObject var storiesVM: StoriesViewModel
     let avatarNamespace: Namespace.ID
-    @Binding var selectedGroup: StoriesGroupModel
     @State private var scrollViewProxy: ScrollViewProxy?
+
+    private let avatarSize: CGFloat = 70
+    private let titleHeight: CGFloat = 20
 
     var body: some View {
         ZStack {
             ScrollViewReader { proxy in
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 16) {
-                        ForEach(storiesGroups, id: \.id) { group in
-                            StoryGroupView(
+                        ForEach(storiesVM.dataModel.storiesGroups, id: \.id) { group in
+                            StoryGroupItemView(
                                 group: group,
+                                storiesVM: storiesVM,
                                 avatarNamespace: avatarNamespace,
-                                isSelected: selectedGroup.id == group.id,
-                                onTap: {
-                                    withAnimation(.easeInOut(duration: 0.25)) {
-                                        selectedGroup = group
-                                    }
-                                }
+                                avatarSize: avatarSize,
+                                titleHeight: titleHeight
                             )
-                            .id(group.id)
                         }
                     }
                     .padding(.horizontal, 16)
@@ -32,7 +30,7 @@ struct StoriesCarouselView: View {
                 .onAppear {
                     scrollViewProxy = proxy
                 }
-                .onChange(of: selectedGroup) { group in
+                .onChange(of: storiesVM.selectedGroup) { group in
                     guard group != .empty else { return }
 
                     withAnimation(.easeInOut(duration: 0.3)) {
@@ -44,63 +42,100 @@ struct StoriesCarouselView: View {
     }
 }
 
-struct StoryGroupView: View {
+struct StoryGroupItemView: View {
     let group: StoriesGroupModel
+    @ObservedObject var storiesVM: StoriesViewModel
     let avatarNamespace: Namespace.ID
-    let isSelected: Bool
-    let onTap: () -> Void
-    @State private var isPressed = false
-
-    private let avatarSize: CGFloat = 70
-    private let titleHeight: CGFloat = 20
-
+    let avatarSize: CGFloat
+    let titleHeight: CGFloat
+    
     var body: some View {
-        VStack(spacing: 8) {
-            ZStack {
-                Circle()
-                    .stroke(
-                        group.isViewed ? .gray.opacity(0.5) : .blue,
-                        lineWidth: 3
-                    )
-                    .frame(width: avatarSize + 6, height: avatarSize + 6)
-
-                KFImage(avatarURL)
-                    .placeholder {
+        Group {
+            if storiesVM.animatableModel.selectedGroupId == group.id && storiesVM.isExpanded {
+                VStack(spacing: 8) {
+                    ZStack {
                         Circle()
-                            .fill(.gray.opacity(0.3))
-                            .frame(width: avatarSize, height: avatarSize)
-                            .overlay(
-                                Image(systemName: "music.mic")
-                                    .font(.system(size: 20))
-                                    .foregroundColor(.gray)
+                            .stroke(
+                                group.isViewed ? .gray.opacity(0.5) : .blue,
+                                lineWidth: 3
+                            )
+                            .frame(width: avatarSize + 6, height: avatarSize + 6)
+                    }
+
+                    Text(group.title)
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+                        .frame(width: avatarSize + 6, height: titleHeight)
+                }
+                .frame(width: avatarSize + 6, height: titleHeight + 8 + avatarSize + 12)
+            } else {
+                VStack(spacing: 8) {
+                    ZStack {
+                        Circle()
+                            .stroke(
+                                group.isViewed ? .gray.opacity(0.5) : .blue,
+                                lineWidth: 3
+                            )
+                            .frame(width: avatarSize + 6, height: avatarSize + 6)
+
+                        avatarImageView
+                            .matchedGeometryEffect(
+                                id: group.id,
+                                in: avatarNamespace
                             )
                     }
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: avatarSize, height: avatarSize)
-                    .clipShape(Circle())
-                    .matchedGeometryEffect(id: group.id, in: avatarNamespace)
-            }
-            .scaleEffect(isPressed ? 0.96 : 1.0)
 
-            Text(group.title)
-                .font(.system(size: 12, weight: .bold))
-                .foregroundColor(.primary)
-                .lineLimit(1)
-                .frame(width: avatarSize + 6, height: titleHeight)
+                    Text(group.title)
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.primary)
+                        .lineLimit(1)
+                        .frame(width: avatarSize + 6, height: titleHeight)
+                }
+                .frame(width: avatarSize + 6, height: titleHeight + 8 + avatarSize + 12)
+                .onTapGesture {
+                    handleTap()
+                }
+            }
         }
-        .frame(width: avatarSize + 6, height: titleHeight + 8 + avatarSize + 12)
-        .animation(.easeInOut(duration: 0.1), value: isPressed)
-        .animation(.easeInOut(duration: 0.1), value: group.isViewed)
-        .onTapGesture {
-            onTap()
+        .id(group.id)
+    }
+    
+    @ViewBuilder
+    private var avatarImageView: some View {
+        switch group.avatarImage {
+        case let .local(image):
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
+                .frame(width: avatarSize, height: avatarSize)
+                .clipShape(Circle())
+        case let .remote(url):
+            KFImage(url)
+                .placeholder {
+                    Circle()
+                        .fill(.gray.opacity(0.3))
+                        .frame(width: avatarSize, height: avatarSize)
+                        .overlay(
+                            Image(systemName: "music.mic")
+                                .font(.system(size: 20))
+                                .foregroundColor(.gray)
+                        )
+                }
+                .resizable()
+                .scaledToFill()
+                .frame(width: avatarSize, height: avatarSize)
+                .clipShape(Circle())
         }
     }
-
-    private var avatarURL: URL? {
-        if case let .remote(url) = group.avatarImage {
-            return url
+    
+    private func handleTap() {
+        if storiesVM.selectedGroup == .empty {
+            storiesVM.selectedGroup = group
+            withAnimation(.interactiveSpring(response: 0.3, dampingFraction: 0.8, blendDuration: 0.8)) {
+                storiesVM.animatableModel.selectedGroupId = group.id
+                storiesVM.isExpanded = true
+            }
         }
-        return nil
     }
 }
