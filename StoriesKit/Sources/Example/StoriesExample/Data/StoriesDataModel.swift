@@ -131,6 +131,60 @@ final class StoriesDataModel: ObservableObject {
         randomImages = imageUrls.shuffled()
     }
     
+    // MARK: - Page Viewing Logic
+    
+    func markPageAsViewed(groupId: String, pageId: String) {
+        updatePageViewedStatus(groupId: groupId, pageId: pageId, isViewed: true)
+        
+        if let group = storiesGroups.first(where: { $0.id == groupId }) {
+            updateGroupViewedStatus(
+                groupId: groupId,
+                isViewed: group.pages.allSatisfy(\.isViewed)
+            )
+        }
+    }
+
+    private func updatePageViewedStatus(groupId: String, pageId: String, isViewed: Bool) {
+        if let groupIndex = storiesGroups.firstIndex(where: { $0.id == groupId }),
+           let pageIndex = storiesGroups[groupIndex].pages.firstIndex(where: { $0.id == pageId }) {
+            
+            let currentPage = storiesGroups[groupIndex].pages[pageIndex]
+            let updatedPage = StoriesPageModel(
+                id: currentPage.id,
+                title: currentPage.title,
+                subtitle: currentPage.subtitle,
+                backgroundColor: currentPage.backgroundColor,
+                isViewed: isViewed,
+                button: currentPage.button,
+                mediaSource: currentPage.mediaSource,
+                duration: currentPage.duration
+            )
+            
+            var updatedPages = storiesGroups[groupIndex].pages
+            updatedPages[pageIndex] = updatedPage
+            
+            storiesGroups[groupIndex] = StoriesGroupModel(
+                id: storiesGroups[groupIndex].id,
+                title: storiesGroups[groupIndex].title,
+                avatarImage: storiesGroups[groupIndex].avatarImage,
+                pages: updatedPages,
+                isViewed: storiesGroups[groupIndex].isViewed
+            )
+        }
+    }
+    
+    private func updateGroupViewedStatus(groupId: String, isViewed: Bool) {
+        if let index = storiesGroups.firstIndex(where: { $0.id == groupId }) {
+            storiesGroups[index] = StoriesGroupModel(
+                id: storiesGroups[index].id,
+                title: storiesGroups[index].title,
+                avatarImage: storiesGroups[index].avatarImage,
+                pages: storiesGroups[index].pages,
+                isViewed: isViewed
+            )
+        }
+    }
+    
     private func createStoryPage(
         title: String,
         subtitle: String,
@@ -152,7 +206,7 @@ final class StoriesDataModel: ObservableObject {
             mediaSource: StoriesMediaModel(
                 media: .image(.remote(URL(string: imageUrl)!))
             ),
-            duration: 4.0
+            duration: 5.0
         )
     }
 }

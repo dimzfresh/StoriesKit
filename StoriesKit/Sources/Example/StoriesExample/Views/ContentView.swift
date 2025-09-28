@@ -32,6 +32,11 @@ struct ContentView: View {
                 .ignoresSafeArea()
             }
         }
+        .onChange(of: stateManager.state.event) { event in
+            if case let .didViewPage(groupId, pageId) = event {
+                storiesVM.dataModel.markPageAsViewed(groupId: groupId, pageId: pageId)
+            }
+        }
     }
 
     private var storiesCarouselView: some View {

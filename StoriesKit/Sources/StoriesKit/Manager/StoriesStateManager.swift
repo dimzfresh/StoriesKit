@@ -28,6 +28,8 @@ public final class StoriesStateManager: ObservableObject {
             state.event = event
         case let .didOpenLink(url):
             state.event = event
+        case let .didViewPage(groupId, pageId):
+            state.event = event
         }
     }
 
@@ -35,6 +37,7 @@ public final class StoriesStateManager: ObservableObject {
         case didToggleGroup(String?)
         case didSwitchGroup(String)
         case didOpenLink(String)
+        case didViewPage(String, String) // groupId, pageId
     }
 
     public struct State: Hashable {

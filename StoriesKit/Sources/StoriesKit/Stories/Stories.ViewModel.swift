@@ -78,7 +78,7 @@ private extension Stories.ViewModel {
     func handleEvent(_ event: Stories.ViewEvent) {
         switch event {
         case .didAppear:
-            startCurrentStoryTimer()
+            startCurrentPageTimer()
         case .didTapNext:
             handleNextTap()
         case .didTapPrevious:
@@ -92,7 +92,7 @@ private extension Stories.ViewModel {
         case .didPauseTimer:
             timer?.pause()
         case .didResumeTimer:
-            resumeCurrentStoryTimer()
+            resumeCurrentPageTimer()
         case let .didTapButtonLink(url):
             stateManager.send(.didOpenLink(url.absoluteString))
         }
@@ -100,13 +100,17 @@ private extension Stories.ViewModel {
 
     // MARK: - Timer Management
 
-    private func startCurrentStoryTimer() {
+    private func startCurrentPageTimer() {
         guard let currentStory = getCurrentStory() else { return }
 
         timer?.start(duration: currentStory.duration)
+        
+        if let current = state.current {
+            stateManager.send(.didViewPage(current.group.id, current.page.id))
+        }
     }
 
-    private func resumeCurrentStoryTimer() {
+    private func resumeCurrentPageTimer() {
         guard let currentStory = getCurrentStory() else { return }
 
         timer?.resume(duration: currentStory.duration)
@@ -162,7 +166,7 @@ private extension Stories.ViewModel {
         if pressing {
             timer?.pause()
         } else {
-            resumeCurrentStoryTimer()
+            resumeCurrentPageTimer()
         }
     }
 
@@ -184,7 +188,7 @@ private extension Stories.ViewModel {
             current: firstPage.map { .init(group: group, page: $0) },
             isPaused: false
         )
-        startCurrentStoryTimer()
+        startCurrentPageTimer()
     }
     
     func switchToPage(_ pageId: String) {
@@ -203,7 +207,7 @@ private extension Stories.ViewModel {
             ),
             isPaused: false
         )
-        startCurrentStoryTimer()
+        startCurrentPageTimer()
     }
     
     // MARK: - Helper Methods
@@ -263,7 +267,7 @@ private extension Stories.ViewModel {
             ),
             isPaused: false
         )
-        startCurrentStoryTimer()
+        startCurrentPageTimer()
     }
     
     private func moveToPreviousPage() {
@@ -285,6 +289,6 @@ private extension Stories.ViewModel {
             ),
             isPaused: false
         )
-        startCurrentStoryTimer()
+        startCurrentPageTimer()
     }
 }
