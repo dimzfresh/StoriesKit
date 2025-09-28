@@ -18,7 +18,7 @@ final class StoriesDataModel: ObservableObject {
                 id: "taylor_swift",
                 title: "Taylor Swift",
                 avatarImage: .remote(URL(string: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=100&h=100&fit=crop&crop=face")!),
-                stories: [
+                pages: [
                     createStoryPage(
                         title: "New Album! 🎵",
                         subtitle: "Midnights is here!",
@@ -38,7 +38,7 @@ final class StoriesDataModel: ObservableObject {
                 id: "bad_bunny",
                 title: "Bad Bunny",
                 avatarImage: .remote(URL(string: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100&h=100&fit=crop&crop=face")!),
-                stories: [
+                pages: [
                     createStoryPage(
                         title: "Un Verano Sin Ti 🌴",
                         subtitle: "Summer vibes!",
@@ -52,7 +52,7 @@ final class StoriesDataModel: ObservableObject {
                 id: "the_weeknd",
                 title: "The Weeknd",
                 avatarImage: .remote(URL(string: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100&h=100&fit=crop&crop=face")!),
-                stories: [
+                pages: [
                     createStoryPage(
                         title: "After Hours Til Dawn 🌅",
                         subtitle: "World tour continues",
@@ -66,7 +66,7 @@ final class StoriesDataModel: ObservableObject {
                 id: "drake",
                 title: "Drake",
                 avatarImage: .remote(URL(string: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=100&h=100&fit=crop&crop=face")!),
-                stories: [
+                pages: [
                     createStoryPage(
                         title: "Her Loss 🎤",
                         subtitle: "New album out now!",
@@ -86,7 +86,7 @@ final class StoriesDataModel: ObservableObject {
                 id: "ariana_grande",
                 title: "Ariana Grande",
                 avatarImage: .remote(URL(string: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=100&h=100&fit=crop&crop=face")!),
-                stories: [
+                pages: [
                     createStoryPage(
                         title: "Positions 💖",
                         subtitle: "Album anniversary!",
@@ -100,7 +100,7 @@ final class StoriesDataModel: ObservableObject {
                 id: "billie_eilish",
                 title: "Billie Eilish",
                 avatarImage: .remote(URL(string: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=100&h=100&fit=crop&crop=face")!),
-                stories: [
+                pages: [
                     createStoryPage(
                         title: "Happier Than Ever 🌙",
                         subtitle: "New music coming soon",

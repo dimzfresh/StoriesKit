@@ -1,3 +1,4 @@
+import Kingfisher
 import SwiftUI
 import StoriesKit
 
@@ -14,13 +15,14 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             ScrollView(.vertical, showsIndicators: false) {
-                VStack(spacing: 0) {
+                VStack(spacing: 12) {
                     storiesCarouselView
-                    //randomImagesSection
+                    randomImagesSection
                 }
+                .background(Color(.systemBackground))
             }
-            .background(Color(.systemGroupedBackground))
         }
+        .background(Color(.systemGroupedBackground))
         .overlay {
             if stateManager.state.isShown {
                 Stories.build(
@@ -30,9 +32,6 @@ struct ContentView: View {
                 )
                 .ignoresSafeArea()
             }
-        }
-        .onChange(of: stateManager.state.isShown) { isShown in
-            print("🔄 Stories isShown changed: \(isShown)")
         }
     }
 
@@ -64,25 +63,29 @@ struct ContentView: View {
     
     private var randomImagesSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                HStack(spacing: 8) {
-                    Image(systemName: "photo.on.rectangle.angled")
-                        .foregroundColor(.blue)
-                        .font(.title3)
+            HStack(spacing: 8) {
+                Image(systemName: "photo.on.rectangle.angled")
+                    .foregroundColor(.blue)
+                    .font(.title3)
 
-                    Text("Featured Images")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
-                }
+                Text("Featured Images")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
 
                 Spacer()
             }
             .padding(.horizontal, 16)
 
-            RandomImagesView(images: storiesVM.dataModel.randomImages)
+            ForEach(storiesVM.dataModel.randomImages.prefix(5).indices, id: \.self) { index in
+                KFImage(URL(string: storiesVM.dataModel.randomImages[index]))
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: UIScreen.main.bounds.width - 32, height: 200)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .padding(.horizontal, 16)
+            }
         }
-        .padding(.top, 8)
         .background(Color(.systemBackground))
     }
 }

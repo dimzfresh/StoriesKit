@@ -22,6 +22,11 @@ extension Stories {
                     ZStack {
                         if let currentPage {
                             storyPageView(currentPage)
+                                .modifier(MatchedGeometryModifier(
+                                    isCurrentGroup: isCurrentGroup,
+                                    selectedGroupId: stateManager.state.selectedGroupId ?? group.id,
+                                    avatarNamespace: avatarNamespace
+                                ))
                         }
                     }
                     .scaleEffect(getScaleEffect())
@@ -65,11 +70,6 @@ extension Stories {
                         contentOverlay(for: model)
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .modifier(MatchedGeometryModifier(
-                        isCurrentGroup: isCurrentGroup,
-                        selectedGroupId: stateManager.state.selectedGroupId,
-                        avatarNamespace: avatarNamespace
-                    ))
                     .scaleEffect(getScaleEffect())
                     .padding(.top, safeAreaInsets.top)
                     .padding(.bottom, safeAreaInsets.bottom + 16)
@@ -228,6 +228,7 @@ extension Stories {
                     .foregroundColor(.white)
                     .frame(width: 32, height: 32)
             }
+            .onTapGesture {}
         }
 
         private func buttonView(for button: StoriesPageModel.Button) -> some SwiftUI.View {
@@ -261,11 +262,11 @@ extension Stories {
 
 private struct MatchedGeometryModifier: ViewModifier {
     let isCurrentGroup: Bool
-    let selectedGroupId: String?
+    let selectedGroupId: String
     let avatarNamespace: Namespace.ID
 
     func body(content: Content) -> some View {
-        if isCurrentGroup, let selectedGroupId {
+        if isCurrentGroup {
             content
                 .matchedGeometryEffect(
                     id: selectedGroupId,

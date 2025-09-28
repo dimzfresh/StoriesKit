@@ -6,8 +6,8 @@ extension Stories {
         case didAppear
         case didTapNext
         case didTapPrevious
-        case didSwitchGroup(Int)
-        case didSwitchPage(Int)
+        case didSwitchGroup(String) // Group ID
+        case didSwitchPage(String) // Page ID
         case didDismiss
         case didPauseTimer
         case didResumeTimer

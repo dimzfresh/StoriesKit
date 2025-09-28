@@ -64,12 +64,13 @@ struct StoryGroupItemView: View {
                         )
                         .frame(width: avatarSize + 6, height: avatarSize + 6)
 
-                    avatarImageView
-                        .matchedGeometryEffect(
-                            id: group.id,
-                            in: avatarNamespace,
-                            isSource: group.id == stateManager.state.selectedGroupId
-                        )
+                    if group.id != stateManager.state.selectedGroupId {
+                        avatarImageView
+                            .matchedGeometryEffect(
+                                id: group.id,
+                                in: avatarNamespace
+                            )
+                    }
                 }
 
                 Text(group.title)

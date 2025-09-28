@@ -5,20 +5,20 @@ public struct StoriesGroupModel: Hashable, Identifiable {
     public let id: String
     public let title: String
     public let avatarImage: StoriesMediaModel.MediaSource.ImageType
-    public let stories: [StoriesPageModel]
+    public let pages: [StoriesPageModel]
     public let isViewed: Bool
     
     public init(
         id: String,
         title: String,
         avatarImage: StoriesMediaModel.MediaSource.ImageType,
-        stories: [StoriesPageModel],
+        pages: [StoriesPageModel],
         isViewed: Bool = false
     ) {
         self.id = id
         self.title = title
         self.avatarImage = avatarImage
-        self.stories = stories
+        self.pages = pages
         self.isViewed = isViewed
     }
 }

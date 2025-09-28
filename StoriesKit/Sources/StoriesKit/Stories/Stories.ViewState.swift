@@ -6,15 +6,19 @@ extension Stories {
         let id = UUID()
         let groups: [StoriesGroupModel]
         let progressBar: ProgressBar
-        let groupIndex: Int
-        let pageIndex: Int
+        let current: Current?
         let isPaused: Bool
 
-        /// Progress bar state for individual stories
         struct ProgressBar: Identifiable, Hashable {
             let id = UUID()
             let progress: CGFloat
             let duration: TimeInterval
+        }
+
+        struct Current: Identifiable, Hashable {
+            let id = UUID()
+            let group: StoriesGroupModel
+            let page: StoriesPageModel
         }
     }
 }

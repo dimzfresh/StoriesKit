@@ -2,6 +2,7 @@ import UIKit
 
 /// Model representing an individual story page
 public struct StoriesPageModel: Hashable {
+    public let id: String
     public let title: AttributedString
     public let subtitle: AttributedString?
     public let backgroundColor: UIColor
@@ -10,6 +11,7 @@ public struct StoriesPageModel: Hashable {
     public let duration: TimeInterval
     
     public init(
+        id: String = UUID().uuidString,
         title: AttributedString,
         subtitle: AttributedString?,
         backgroundColor: UIColor,
@@ -17,6 +19,7 @@ public struct StoriesPageModel: Hashable {
         mediaSource: StoriesMediaModel,
         duration: TimeInterval = 4.0
     ) {
+        self.id = id
         self.title = title
         self.subtitle = subtitle
         self.backgroundColor = backgroundColor

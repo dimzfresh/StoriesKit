@@ -15,21 +15,14 @@ public final class StoriesStateManager: ObservableObject {
             if let groupId {
                 withAnimation(.easeInOut(duration: 0.25)) {
                     state.selectedGroupId = groupId
-                    state.isShown = true
                 }
             } else {
                 withAnimation(.easeOut(duration: 0.3)) {
-                    state.isShown = false
+                    self.state.selectedGroupId = nil
                 }
             }
 
             state.event = event
-
-            if groupId == nil {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    self.state.selectedGroupId = nil
-                }
-            }
         case let .didSwitchGroup(groupId):
             state.selectedGroupId = groupId
             state.event = event
@@ -46,7 +39,7 @@ public final class StoriesStateManager: ObservableObject {
 
     public struct State: Hashable {
         public var selectedGroupId: String?
-        public var isShown = false
+        public var isShown: Bool { selectedGroupId != nil }
         public var event: Event?
 
         static let `default` = Self()

@@ -9,6 +9,7 @@ extension Stories {
         @State private var verticalDragOffset: CGFloat = 0
         @State private var dragDirection: DragDirection?
         @State private var isScrolling = false
+        @State private var isFirstAppearance = true
         @State private var scrollViewProxy: ScrollViewProxy?
 
         let avatarNamespace: Namespace.ID
@@ -27,19 +28,41 @@ extension Stories {
 
         var body: some SwiftUI.View {
             ZStack {
-                Color(viewModel.state.groups.first?.stories.first?.backgroundColor ?? .black)
+                Color(viewModel.state.groups.first?.pages.first?.backgroundColor ?? .black)
                     .opacity(getBackgroundOpacity())
                     .ignoresSafeArea()
 
                 GeometryReader { geometry in
-                    createScrollView(geometry: geometry)
+                    if isFirstAppearance, let group = viewModel.state.current?.group {
+                        PageView(
+                            group: group,
+                            currentPage: getCurrentPageForGroup(group),
+                            verticalOffset: verticalDragOffset,
+                            progressBars: getProgressBarsForGroup(group),
+                            onButtonAction: handleButtonAction,
+                            isCurrentGroup: viewModel.state.current?.group == group,
+                            onTapPrevious: {
+                                viewModel.send(.didTapPrevious)
+                            },
+                            onTapNext: {
+                                viewModel.send(.didTapNext)
+                            },
+                            avatarNamespace: avatarNamespace,
+                            stateManager: viewModel.stateManager
+                        )
+                        .onAppear {
+                            isFirstAppearance = false
+                        }
+                    } else {
+                        createScrollView(geometry: geometry)
+                    }
                 }
                 .ignoresSafeArea()
             }
-            .transition(.asymmetric(
-                insertion: .scale.combined(with: .opacity),
-                removal: .opacity
-            ))
+//            .transition(.asymmetric(
+//                insertion: .scale.combined(with: .opacity),
+//                removal: .opacity
+//            ))
             .onAppear {
                 viewModel.send(.didAppear)
             }
@@ -58,27 +81,25 @@ extension Stories {
                 ScrollViewReader { proxy in
                     ScrollView(.horizontal, showsIndicators: false) {
                         LazyHStack(spacing: 0) {
-                            ForEach(Array(viewModel.state.groups.enumerated()), id: \.element.id) { index, group in
-                                groupView(
-                                    group: group,
-                                    index: index
-                                )
-                                .frame(
-                                    width: geometry.size.width,
-                                    height: geometry.size.height
-                                )
-                                .id(index)
+                            ForEach(viewModel.state.groups, id: \.id) { group in
+                                groupView(group: group)
+                                    .frame(
+                                        width: geometry.size.width,
+                                        height: geometry.size.height
+                                    )
+                                    .id(group.id)
                             }
                         }
                     }
                     .onAppear {
                         handleScrollViewAppear(proxy: proxy)
                     }
-                    .onChange(of: viewModel.state.groupIndex) { newIndex in
-                        handleGroupIndexChange(proxy: proxy, newIndex: newIndex)
+                    .onChange(of: viewModel.state.current) { current in
+                        guard let groupId = current?.group.id else { return }
+
+                        handleCurrentChange(proxy: proxy, groupId: groupId)
                     }
                     .disabled(dragDirection == .vertical)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .ignoresSafeArea()
                     .offset(y: verticalDragOffset)
                     .simultaneousGesture(createDragGesture())
@@ -91,23 +112,14 @@ extension Stories {
             }
         }
 
-        private func groupView(
-            group: StoriesGroupModel,
-            index: Int
-        ) -> some SwiftUI.View {
+        private func groupView(group: StoriesGroupModel) -> some SwiftUI.View {
             PageView(
                 group: group,
-                currentPage: getCurrentPageForGroup(
-                    group,
-                    at: index
-                ),
+                currentPage: getCurrentPageForGroup(group),
                 verticalOffset: verticalDragOffset,
-                progressBars: getProgressBarsForGroup(
-                    group,
-                    at: index
-                ),
+                progressBars: getProgressBarsForGroup(group),
                 onButtonAction: handleButtonAction,
-                isCurrentGroup: index == viewModel.state.groupIndex,
+                isCurrentGroup: viewModel.state.current?.group == group,
                 onTapPrevious: {
                     viewModel.send(.didTapPrevious)
                 },
@@ -165,37 +177,27 @@ extension Stories {
             }
         }
 
-        private func getCurrentPageForGroup(
-            _ group: StoriesGroupModel,
-            at index: Int
-        ) -> StoriesPageModel? {
-            if index == viewModel.state.groupIndex {
-                guard viewModel.state.pageIndex < group.stories.count else { return nil }
-
-                return group.stories[viewModel.state.pageIndex]
-            }
-
-            return group.stories.first
+        private func getCurrentPageForGroup(_ group: StoriesGroupModel) -> StoriesPageModel? {
+            viewModel.state.current?.group == group ? viewModel.state.current?.page : group.pages.first
         }
 
-        private func getProgressBarsForGroup(
-            _ group: StoriesGroupModel,
-            at index: Int
-        ) -> [Stories.ViewState.ProgressBar] {
-            if index == viewModel.state.groupIndex {
-                group.stories.enumerated().map { storyIndex, story in
-                        .init(
-                            progress: storyIndex < viewModel.state.pageIndex ? 1.0 :
-                            storyIndex == viewModel.state.pageIndex ? viewModel.state.progressBar.progress : 0.0,
-                            duration: story.duration
-                        )
+        private func getProgressBarsForGroup(_ group: StoriesGroupModel) -> [Stories.ViewState.ProgressBar] {
+            if group == viewModel.state.current?.group {
+                group.pages.map { page in
+                    let isCurrentStory = page == viewModel.state.current?.page
+                    let isCompletedStory = isStoryCompleted(page, in: group)
+
+                    return .init(
+                        progress: isCompletedStory ? 1.0 : (isCurrentStory ? viewModel.state.progressBar.progress : 0.0),
+                        duration: page.duration
+                    )
                 }
             } else {
-                group.stories.map { story in
-                        .init(
-                            progress: 0.0,
-                            duration: story.duration
-                        )
+                group.pages.map { story in
+                    .init(
+                        progress: 0.0,
+                        duration: story.duration
+                    )
                 }
             }
         }
@@ -209,6 +211,24 @@ extension Stories {
             let minOpacity = 0.2
 
             return 1.0 - (progress * (1.0 - minOpacity))
+        }
+        
+        // MARK: - Helper Methods for New ViewState
+        
+        private func getCurrentGroupIndex() -> Int {
+            guard let current = viewModel.state.current else { return 0 }
+
+            return viewModel.state.groups.firstIndex(where: { $0 == current.group }) ?? 0
+        }
+        
+        private func isStoryCompleted(_ page: StoriesPageModel, in group: StoriesGroupModel) -> Bool {
+            guard let current = viewModel.state.current,
+                  let currentStoryIndex = group.pages.firstIndex(where: { $0 == current.page }),
+                  let storyIndex = group.pages.firstIndex(where: { $0 == page }) else {
+                return false
+            }
+
+            return storyIndex < currentStoryIndex
         }
 
         // MARK: - Gesture Creation
@@ -225,20 +245,22 @@ extension Stories {
             scrollViewProxy = proxy
 
             Task {
-                proxy.scrollTo(viewModel.state.groupIndex, anchor: .center)
+                if let current = viewModel.state.current {
+                    proxy.scrollTo(current.group.id, anchor: .center)
+                }
             }
         }
 
-        private func handleGroupIndexChange(
+        private func handleCurrentChange(
             proxy: ScrollViewProxy,
-            newIndex: Int
+            groupId: String
         ) {
             isScrolling = true
             scrollViewProxy = proxy
 
             Task {
                 withAnimation(.easeInOut(duration: Constants.animationDuration)) {
-                    proxy.scrollTo(newIndex, anchor: .center)
+                    proxy.scrollTo(groupId, anchor: .center)
                 }
 
                 await delay()
@@ -307,28 +329,21 @@ extension Stories {
             let shouldSwitch = abs(translation) > Constants.swipeThreshold
             || abs(velocity) > Constants.velocityThreshold
 
-            let currentIndex = viewModel.state.groupIndex
-            let totalGroups = viewModel.state.groups.count
-
             if shouldSwitch {
-                performGroupSwitch(
-                    translation: translation,
-                    currentIndex: currentIndex,
-                    totalGroups: totalGroups
-                )
+                performGroupSwitch(translation: translation)
             } else {
                 scrollToCurrentGroup(swipeDirection: translation > 0 ? .right : .left)
             }
         }
 
         private func scrollToCurrentGroup(swipeDirection: SwipeDirection) {
-            guard let scrollViewProxy else { return }
+            guard let scrollViewProxy, let current = viewModel.state.current else { return }
 
             isScrolling = true
 
             Task {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    scrollViewProxy.scrollTo(viewModel.state.groupIndex, anchor: .center)
+                    scrollViewProxy.scrollTo(current.group.id, anchor: .center)
                 }
 
                 await delay()
@@ -355,17 +370,17 @@ extension Stories {
             }
         }
 
-        private func performGroupSwitch(
-            translation: CGFloat,
-            currentIndex: Int,
-            totalGroups: Int
-        ) {
+        private func performGroupSwitch(translation: CGFloat) {
+            guard let currentGroupId = viewModel.state.current?.group.id else { return }
+
+            let currentIndex = getCurrentGroupIndex()
+
             if translation > 0 && currentIndex > 0 {
-                let index = currentIndex - 1
-                viewModel.send(.didSwitchGroup(index))
-            } else if translation < 0 && currentIndex < totalGroups - 1 {
-                let index = currentIndex + 1
-                viewModel.send(.didSwitchGroup(index))
+                let previousGroup = viewModel.state.groups[currentIndex - 1]
+                viewModel.send(.didSwitchGroup(previousGroup.id))
+            } else if translation < 0 && currentIndex < viewModel.state.groups.count - 1 {
+                let nextGroup = viewModel.state.groups[currentIndex + 1]
+                viewModel.send(.didSwitchGroup(nextGroup.id))
             } else {
                 scrollToCurrentGroup(swipeDirection: translation > 0 ? .right : .left)
             }
