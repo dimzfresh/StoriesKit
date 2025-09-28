@@ -6,51 +6,39 @@ public enum Stories {
     /// Creates UIKit version of Stories
     /// - Parameters:
     ///   - groups: Array of story groups
-    ///   - delegate: Delegate for event handling
+    ///   - stateManager: StoriesStateManager for state management
+    ///   - avatarNamespace: Namespace for matched geometry effect
     /// - Returns: UIViewController for presentation
     public static func build(
         groups: [StoriesGroupModel],
-        animatableModel: StoriesAnimatableModel,
-        avatarNamespace: Namespace.ID,
-        delegate: IStoriesDelegate? = nil,
-        selectedGroup: StoriesGroupModel? = nil
+        stateManager: StoriesStateManager,
+        avatarNamespace: Namespace.ID
     ) -> UIViewController {
-        let viewModel = ViewModel(
-            groups: groups,
-            delegate: delegate,
-            selectedGroup: selectedGroup
-        )
-
-        let viewController = ViewController(
-            viewModel: viewModel,
-            animatableModel: animatableModel,
+        ViewController(
+            viewModel: ViewModel(
+                groups: groups,
+                stateManager: stateManager
+            ),
             avatarNamespace: avatarNamespace
         )
-
-        return viewController
     }
     
     /// Creates pure SwiftUI version of Stories (without UIHostingController)
     /// - Parameters:
     ///   - groups: Array of story groups
-    ///   - delegate: Delegate for event handling
+    ///   - stateManager: StoriesStateManager for state management
+    ///   - avatarNamespace: Namespace for matched geometry effect
     /// - Returns: Pure SwiftUI View for embedding in SwiftUI hierarchy
     public static func build(
         groups: [StoriesGroupModel],
-        animatableModel: StoriesAnimatableModel,
-        avatarNamespace: Namespace.ID,
-        delegate: IStoriesDelegate? = nil,
-        selectedGroup: StoriesGroupModel? = nil
+        stateManager: StoriesStateManager,
+        avatarNamespace: Namespace.ID
     ) -> some SwiftUI.View {
-        let viewModel = ViewModel(
-            groups: groups,
-            delegate: delegate,
-            selectedGroup: selectedGroup
-        )
-
-        return Stories.View(
-            viewModel: viewModel,
-            animatableModel: animatableModel,
+        Stories.View(
+            viewModel: ViewModel(
+                groups: groups,
+                stateManager: stateManager
+            ),
             avatarNamespace: avatarNamespace
         )
     }

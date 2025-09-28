@@ -4,13 +4,13 @@ import Combine
 /// Protocol for Stories view model
 protocol IStoriesViewModel: ObservableObject {
     var state: Stories.ViewState { get }
+    var stateManager: StoriesStateManager { get }
 
     func send(_ event: Stories.ViewEvent)
 
     init(
         groups: [StoriesGroupModel],
-        delegate: IStoriesDelegate?,
-        selectedGroup: StoriesGroupModel?
+        stateManager: StoriesStateManager
     )
 }
 
@@ -18,19 +18,18 @@ extension Stories {
     /// View model for managing Stories state and logic
     final class ViewModel: IStoriesViewModel {
         @Published private(set) var state: ViewState
+        @Published private(set) var stateManager: StoriesStateManager
 
         private let viewEvent = PassthroughSubject<ViewEvent, Never>()
         private var subscriptions = Set<AnyCancellable>()
 
         private var timer: CountDownTimer?
-        private let delegate: IStoriesDelegate?
 
         init(
             groups: [StoriesGroupModel],
-            delegate: IStoriesDelegate? = nil,
-            selectedGroup: StoriesGroupModel? = nil
+            stateManager: StoriesStateManager
         ) {
-            let initialGroupIndex = groups.firstIndex(where: { $0.id == selectedGroup?.id }) ?? 0
+            let initialGroupIndex = groups.firstIndex(where: { $0.id == stateManager.state.selectedGroupId }) ?? 0
 
             self.state = .init(
                 groups: groups,
@@ -42,7 +41,7 @@ extension Stories {
                 pageIndex: 0,
                 isPaused: false
             )
-            self.delegate = delegate
+            self.stateManager = stateManager
             self.timer = .init(
                 onProgressUpdate: { [weak self] progress in
                     self?.updateProgress(progress)
@@ -88,15 +87,13 @@ private extension Stories.ViewModel {
         case let .didSwitchPage(pageIndex):
             switchToPage(pageIndex)
         case .didDismiss:
-            delegate?.didClose()
-        case let .didOpenStory(storyId):
-            delegate?.didOpenStory(storyId: storyId)
+            stateManager.send(.didToggleGroup(nil))
         case .didPauseTimer:
             timer?.pause()
         case .didResumeTimer:
             resumeCurrentStoryTimer()
         case let .didTapButtonLink(url):
-            delegate?.didOpenLink(url: url)
+            stateManager.send(.didOpenLink(url.absoluteString))
         }
     }
 
@@ -167,6 +164,8 @@ private extension Stories.ViewModel {
         timer?.stop()
 
         let firstPage = state.groups[groupIndex].stories.first
+
+        stateManager.send(.didSwitchGroup(state.groups[groupIndex].id))
 
         state = .init(
             groups: state.groups,

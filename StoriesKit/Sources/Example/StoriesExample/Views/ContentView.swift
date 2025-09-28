@@ -3,14 +3,11 @@ import StoriesKit
 
 final class StoriesViewModel: ObservableObject {
     @Published var dataModel = StoriesDataModel()
-    @Published var selectedGroup: StoriesGroupModel = .empty
-    @Published var isExpanded = false
-
-    @Published var animatableModel = StoriesAnimatableModel()
 }
 
-struct ContentView: View, IStoriesDelegate {
-    @ObservedObject private var storiesVM = StoriesViewModel()
+struct ContentView: View {
+    @StateObject private var storiesVM = StoriesViewModel()
+    @StateObject private var stateManager = StoriesStateManager()
 
     @Namespace private var avatarNamespace
 
@@ -25,21 +22,18 @@ struct ContentView: View, IStoriesDelegate {
             .background(Color(.systemGroupedBackground))
         }
         .overlay {
-            if storiesVM.isExpanded {
+            if stateManager.state.isShown {
                 Stories.build(
                     groups: storiesVM.dataModel.storiesGroups,
-                    animatableModel: storiesVM.animatableModel,
-                    avatarNamespace: avatarNamespace,
-                    delegate: self,
-                    selectedGroup: storiesVM.selectedGroup
+                    stateManager: stateManager,
+                    avatarNamespace: avatarNamespace
                 )
                 .ignoresSafeArea()
             }
         }
-    }
-
-    init() {
-        _avatarNamespace = .init()
+        .onChange(of: stateManager.state.isShown) { isShown in
+            print("🔄 Stories isShown changed: \(isShown)")
+        }
     }
 
     private var storiesCarouselView: some View {
@@ -60,6 +54,7 @@ struct ContentView: View, IStoriesDelegate {
 
             StoriesCarouselView(
                 storiesVM: storiesVM,
+                stateManager: stateManager,
                 avatarNamespace: avatarNamespace
             )
         }
@@ -90,22 +85,4 @@ struct ContentView: View, IStoriesDelegate {
         .padding(.top, 8)
         .background(Color(.systemBackground))
     }
-
-    private func dismissStories() {
-        withAnimation(.easeInOut(duration: 0.3)) {
-            storiesVM.isExpanded = false
-            storiesVM.selectedGroup = .empty
-        }
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            storiesVM.animatableModel.selectedGroupId = ""
-        }
-    }
-    
-    func didClose() {
-        dismissStories()
-    }
-
-    func didOpenLink(url: URL) {}
-    func didOpenStory(storyId: String) {}
 }

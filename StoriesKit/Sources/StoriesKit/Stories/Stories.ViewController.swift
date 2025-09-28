@@ -6,12 +6,10 @@ extension Stories {
     final class ViewController: AnyHostingController {
         init(
             viewModel: ViewModel,
-            animatableModel: StoriesAnimatableModel,
             avatarNamespace: Namespace.ID
         ) {
             super.init(rootView: Stories.View(
                 viewModel: viewModel,
-                animatableModel: animatableModel,
                 avatarNamespace: avatarNamespace
             ))
             setupView()

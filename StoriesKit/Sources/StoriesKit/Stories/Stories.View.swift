@@ -5,7 +5,6 @@ extension Stories {
     /// Main content view for Stories with navigation and gesture handling
     struct `View`<ViewModel: ObservableObject>: SwiftUI.View where ViewModel: IStoriesViewModel {
         @StateObject private var viewModel: ViewModel
-        @StateObject private var animatableModel: StoriesAnimatableModel
 
         @State private var verticalDragOffset: CGFloat = 0
         @State private var dragDirection: DragDirection?
@@ -48,11 +47,9 @@ extension Stories {
 
         public init(
             viewModel: ViewModel,
-            animatableModel: StoriesAnimatableModel,
             avatarNamespace: Namespace.ID
         ) {
             _viewModel = .init(wrappedValue: viewModel)
-            _animatableModel = .init(wrappedValue: animatableModel)
             self.avatarNamespace = avatarNamespace
         }
 
@@ -118,7 +115,7 @@ extension Stories {
                     viewModel.send(.didTapNext)
                 },
                 avatarNamespace: avatarNamespace,
-                animatableModel: animatableModel
+                stateManager: viewModel.stateManager
             )
         }
 
@@ -366,13 +363,10 @@ extension Stories {
             if translation > 0 && currentIndex > 0 {
                 let index = currentIndex - 1
                 viewModel.send(.didSwitchGroup(index))
-                animatableModel.selectedGroupId = viewModel.state.groups[index].id
             } else if translation < 0 && currentIndex < totalGroups - 1 {
                 let index = currentIndex + 1
                 viewModel.send(.didSwitchGroup(index))
-                animatableModel.selectedGroupId = viewModel.state.groups[index].id
             } else {
-                animatableModel.selectedGroupId = viewModel.state.groups[currentIndex].id
                 scrollToCurrentGroup(swipeDirection: translation > 0 ? .right : .left)
             }
         }

@@ -4,7 +4,9 @@ import StoriesKit
 
 struct StoriesCarouselView: View {
     @ObservedObject var storiesVM: StoriesViewModel
+    @ObservedObject var stateManager: StoriesStateManager
     let avatarNamespace: Namespace.ID
+
     @State private var scrollViewProxy: ScrollViewProxy?
 
     private let avatarSize: CGFloat = 70
@@ -19,6 +21,7 @@ struct StoriesCarouselView: View {
                             StoryGroupItemView(
                                 group: group,
                                 storiesVM: storiesVM,
+                                stateManager: stateManager,
                                 avatarNamespace: avatarNamespace,
                                 avatarSize: avatarSize,
                                 titleHeight: titleHeight
@@ -30,8 +33,8 @@ struct StoriesCarouselView: View {
                 .onAppear {
                     scrollViewProxy = proxy
                 }
-                .onChange(of: storiesVM.animatableModel.selectedGroupId) { groupId in
-                    guard !groupId.isEmpty else { return }
+                .onChange(of: stateManager.state.selectedGroupId) { groupId in
+                    guard let groupId else { return }
 
                     withAnimation(.easeInOut(duration: 0.2)) {
                         proxy.scrollTo(groupId, anchor: .center)
@@ -45,6 +48,7 @@ struct StoriesCarouselView: View {
 struct StoryGroupItemView: View {
     let group: StoriesGroupModel
     @ObservedObject var storiesVM: StoriesViewModel
+    @ObservedObject var stateManager: StoriesStateManager
     let avatarNamespace: Namespace.ID
     let avatarSize: CGFloat
     let titleHeight: CGFloat
@@ -64,7 +68,7 @@ struct StoryGroupItemView: View {
                         .matchedGeometryEffect(
                             id: group.id,
                             in: avatarNamespace,
-                            isSource: group.id == storiesVM.animatableModel.selectedGroupId
+                            isSource: group.id == stateManager.state.selectedGroupId
                         )
                 }
 
@@ -111,12 +115,6 @@ struct StoryGroupItemView: View {
     }
     
     private func handleTap() {
-        if storiesVM.selectedGroup == .empty {
-            storiesVM.selectedGroup = group
-            withAnimation(.easeInOut(duration: 0.25)) {
-                storiesVM.animatableModel.selectedGroupId = group.id
-                storiesVM.isExpanded = true
-            }
-        }
+        stateManager.send(.didToggleGroup(group.id))
     }
 }

@@ -12,7 +12,7 @@ extension Stories {
         let onTapPrevious: () -> Void
         let onTapNext: () -> Void
         let avatarNamespace: Namespace.ID
-        @ObservedObject var animatableModel: StoriesAnimatableModel
+        let stateManager: StoriesStateManager
 
         @Environment(\.safeAreaInsets) private var safeAreaInsets
 
@@ -67,7 +67,7 @@ extension Stories {
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .modifier(MatchedGeometryModifier(
                         isCurrentGroup: isCurrentGroup,
-                        selectedGroupId: animatableModel.selectedGroupId,
+                        selectedGroupId: stateManager.state.selectedGroupId,
                         avatarNamespace: avatarNamespace
                     ))
                     .scaleEffect(getScaleEffect())
@@ -75,7 +75,7 @@ extension Stories {
                     .padding(.bottom, safeAreaInsets.bottom + 16)
             }
         }
-        
+
         private func progressBarsView() -> some SwiftUI.View {
             HStack(spacing: 4) {
                 ForEach(progressBars, id: \.self) { data in
@@ -87,23 +87,23 @@ extension Stories {
             }
             .frame(height: 10)
         }
-        
+
         private func getAngle(geometry: GeometryProxy) -> Angle {
             let rotationAngle: CGFloat = Constants.rotationAngle
             let progress = geometry.frame(in: .global).minX / geometry.size.width
             let degrees = rotationAngle * progress
             return Angle(degrees: degrees)
         }
-        
+
         private func getScaleEffect() -> CGFloat {
             guard isCurrentGroup && verticalOffset > 0 else { return 1.0 }
 
             let threshold = UIScreen.main.bounds.height * Constants.scaleThreshold
             let progress = min(verticalOffset / threshold, 1.0)
-            
+
             return 1.0 - (progress * (1.0 - Constants.minScale))
         }
-        
+
         private func getAdaptiveCornerRadius(
             _ corners: StoriesPageModel.Button.Corners
         ) -> CGFloat {
@@ -113,7 +113,7 @@ extension Stories {
             case let .radius(radius): radius
             }
         }
-        
+
         private func tapArea(isLeftSide: Bool) -> some SwiftUI.View {
             Rectangle()
                 .fill(.clear)
@@ -125,9 +125,9 @@ extension Stories {
                         }
                 )
         }
-        
+
         // MARK: - Helper Methods
-        
+
         private func tapAreasOverlay() -> some SwiftUI.View {
             HStack(spacing: 0) {
                 tapArea(isLeftSide: true)
@@ -135,14 +135,14 @@ extension Stories {
             }
             .ignoresSafeArea()
         }
-        
+
         private func contentOverlay(for model: StoriesPageModel) -> some SwiftUI.View {
             VStack(alignment: .center, spacing: 0) {
                 VStack(spacing: 0) {
                     progressBarsView()
                         .padding(.top, 12)
                         .padding(.horizontal, 10)
-                    
+
                     headerView()
                         .padding(.top, 8)
                         .padding(.horizontal, 16)
@@ -169,20 +169,20 @@ extension Stories {
                 }
             }
         }
-        
+
         private func headerView() -> some SwiftUI.View {
             HStack(spacing: 0) {
                 HStack(spacing: 12) {
                     avatarView()
                     usernameView()
                 }
-                
+
                 Spacer()
-                
+
                 closeButton()
             }
         }
-        
+
         private func avatarView() -> some SwiftUI.View {
             Group {
                 switch group.avatarImage {
@@ -211,14 +211,14 @@ extension Stories {
                 }
             }
         }
-        
+
         private func usernameView() -> some SwiftUI.View {
             Text(group.title)
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.white)
                 .lineLimit(1)
         }
-        
+
         private func closeButton() -> some SwiftUI.View {
             Button {
                 onButtonAction(.close)
@@ -229,7 +229,7 @@ extension Stories {
                     .frame(width: 32, height: 32)
             }
         }
-        
+
         private func buttonView(for button: StoriesPageModel.Button) -> some SwiftUI.View {
             Button {
                 onButtonAction(button.actionType)
@@ -242,7 +242,7 @@ extension Stories {
             .padding(.bottom, safeAreaInsets.bottom + 24)
             .onTapGesture {}
         }
-        
+
         private func handleTapAreaAction(isLeftSide: Bool) {
             if isLeftSide {
                 onTapPrevious()
@@ -251,7 +251,7 @@ extension Stories {
             }
         }
     }
-    
+
     private enum Constants {
         static let rotationAngle: CGFloat = 45
         static let scaleThreshold: CGFloat = 0.3
@@ -259,13 +259,13 @@ extension Stories {
     }
 }
 
-struct MatchedGeometryModifier: ViewModifier {
+private struct MatchedGeometryModifier: ViewModifier {
     let isCurrentGroup: Bool
-    let selectedGroupId: String
+    let selectedGroupId: String?
     let avatarNamespace: Namespace.ID
-    
+
     func body(content: Content) -> some View {
-        if isCurrentGroup, !selectedGroupId.isEmpty {
+        if isCurrentGroup, let selectedGroupId {
             content
                 .matchedGeometryEffect(
                     id: selectedGroupId,

@@ -9,7 +9,6 @@ extension Stories {
         case didSwitchGroup(Int)
         case didSwitchPage(Int)
         case didDismiss
-        case didOpenStory(String)
         case didPauseTimer
         case didResumeTimer
         case didTapButtonLink(URL)

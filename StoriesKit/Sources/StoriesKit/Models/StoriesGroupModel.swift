@@ -1,4 +1,4 @@
-import Foundation
+import UIKit
 
 /// Model representing a group of stories (e.g., from one user)
 public struct StoriesGroupModel: Hashable, Identifiable {
@@ -21,11 +21,4 @@ public struct StoriesGroupModel: Hashable, Identifiable {
         self.stories = stories
         self.isViewed = isViewed
     }
-
-    public static let empty = Self(
-        id: "",
-        title: "",
-        avatarImage: .local(.init()),
-        stories: []
-    )
 }
