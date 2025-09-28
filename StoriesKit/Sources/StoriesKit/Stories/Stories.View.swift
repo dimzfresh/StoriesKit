@@ -261,7 +261,6 @@ extension Stories {
 
                 await delay()
 
-                proxy.scrollTo(groupId, anchor: .center)
                 isScrolling = false
             }
         }
@@ -380,8 +379,6 @@ extension Stories {
                 let nextGroup = viewModel.state.groups[currentIndex + 1]
                 viewModel.send(.didSwitchGroup(nextGroup.id))
                 viewModel.stateManager.send(.didSwitchGroup(nextGroup.id))
-            } else {
-                scrollToCurrentGroup(swipeDirection: translation > 0 ? .right : .left)
             }
         }
 
