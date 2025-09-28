@@ -59,10 +59,6 @@ extension Stories {
                 }
                 .ignoresSafeArea()
             }
-//            .transition(.asymmetric(
-//                insertion: .scale.combined(with: .opacity),
-//                removal: .opacity
-//            ))
             .onAppear {
                 viewModel.send(.didAppear)
             }
@@ -265,6 +261,7 @@ extension Stories {
 
                 await delay()
 
+                proxy.scrollTo(groupId, anchor: .center)
                 isScrolling = false
             }
         }
@@ -378,9 +375,11 @@ extension Stories {
             if translation > 0 && currentIndex > 0 {
                 let previousGroup = viewModel.state.groups[currentIndex - 1]
                 viewModel.send(.didSwitchGroup(previousGroup.id))
+                viewModel.stateManager.send(.didSwitchGroup(previousGroup.id))
             } else if translation < 0 && currentIndex < viewModel.state.groups.count - 1 {
                 let nextGroup = viewModel.state.groups[currentIndex + 1]
                 viewModel.send(.didSwitchGroup(nextGroup.id))
+                viewModel.stateManager.send(.didSwitchGroup(nextGroup.id))
             } else {
                 scrollToCurrentGroup(swipeDirection: translation > 0 ? .right : .left)
             }

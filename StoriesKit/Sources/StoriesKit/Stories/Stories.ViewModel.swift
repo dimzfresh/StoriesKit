@@ -31,7 +31,7 @@ extension Stories {
         ) {
             let initialGroupIndex = groups.firstIndex(where: { $0.id == stateManager.state.selectedGroupId }) ?? 0
             let initialGroup = groups[initialGroupIndex]
-            let initialPage = initialGroup.pages.first
+            let initialPage = initialGroup.pages.first { !$0.isViewed } ?? initialGroup.pages.first
 
             self.state = .init(
                 groups: groups,
@@ -176,8 +176,6 @@ private extension Stories.ViewModel {
         timer?.stop()
 
         let firstPage = group.pages.first
-
-        stateManager.send(.didSwitchGroup(groupId))
 
         state = .init(
             groups: state.groups,
