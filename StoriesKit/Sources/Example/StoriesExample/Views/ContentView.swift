@@ -14,13 +14,12 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(spacing: 12) {
-                    storiesCarouselView
-                    randomImagesSection
-                }
-                .background(Color(.systemBackground))
+            VStack(spacing: 12) {
+                storiesCarouselView
+
+                randomImagesSection
             }
+            .background(Color(.systemBackground))
         }
         .background(Color(.systemGroupedBackground))
         .overlay {
@@ -77,13 +76,21 @@ struct ContentView: View {
             }
             .padding(.horizontal, 16)
 
-            ForEach(storiesVM.dataModel.randomImages.prefix(5).indices, id: \.self) { index in
-                KFImage(URL(string: storiesVM.dataModel.randomImages[index]))
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: UIScreen.main.bounds.width - 32, height: 200)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .padding(.horizontal, 16)
+            ScrollView(.vertical, showsIndicators: false) {
+                ForEach(storiesVM.dataModel.randomImages.prefix(5).indices, id: \.self) { index in
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(.clear)
+                        .frame(width: UIScreen.main.bounds.width - 32, height: 200)
+                        .overlay {
+                            KFImage(URL(string: storiesVM.dataModel.randomImages[index]))
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: UIScreen.main.bounds.width - 32, height: 200)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+                        .clipped()
+                        .padding(.horizontal, 16)
+                }
             }
         }
         .background(Color(.systemBackground))

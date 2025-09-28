@@ -268,6 +268,7 @@ private extension Stories.ViewModel {
     
     private func moveToPreviousPage() {
         guard let current = state.current else { return }
+
         let currentPageIndex = current.group.pages.firstIndex(where: { $0 == current.page }) ?? 0
         let prevPageIndex = currentPageIndex - 1
         let prevPage = current.group.pages[prevPageIndex]

@@ -17,7 +17,7 @@ struct StoriesCarouselView: View {
             ScrollViewReader { proxy in
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 16) {
-                        ForEach(storiesVM.dataModel.storiesGroups, id: \.id) { group in
+                        ForEach(storiesVM.dataModel.storiesGroups) { group in
                             StoryGroupItemView(
                                 group: group,
                                 storiesVM: storiesVM,
@@ -26,6 +26,7 @@ struct StoriesCarouselView: View {
                                 avatarSize: avatarSize,
                                 titleHeight: titleHeight
                             )
+                            .id(group.id)
                         }
                     }
                     .padding(.horizontal, 16)
@@ -52,39 +53,36 @@ struct StoryGroupItemView: View {
     let avatarNamespace: Namespace.ID
     let avatarSize: CGFloat
     let titleHeight: CGFloat
-    
+
     var body: some View {
-        Group {
-            VStack(spacing: 8) {
-                ZStack {
-                    Circle()
-                        .stroke(
-                            group.isViewed ? .gray.opacity(0.5) : .blue,
-                            lineWidth: 3
+        VStack(spacing: 8) {
+            ZStack {
+                Circle()
+                    .stroke(
+                        group.isViewed ? .gray.opacity(0.5) : .blue,
+                        lineWidth: 3
+                    )
+                    .frame(width: avatarSize + 6, height: avatarSize + 6)
+
+                if group.id != stateManager.state.selectedGroupId {
+                    avatarImageView
+                        .matchedGeometryEffect(
+                            id: group.id,
+                            in: avatarNamespace
                         )
-                        .frame(width: avatarSize + 6, height: avatarSize + 6)
-
-                    if group.id != stateManager.state.selectedGroupId {
-                        avatarImageView
-                            .matchedGeometryEffect(
-                                id: group.id,
-                                in: avatarNamespace
-                            )
-                    }
                 }
+            }
 
-                Text(group.title)
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(.primary)
-                    .lineLimit(1)
-                    .frame(width: avatarSize + 6, height: titleHeight)
-            }
-            .frame(width: avatarSize + 6, height: titleHeight + 8 + avatarSize + 12)
-            .onTapGesture {
-                handleTap()
-            }
+            Text(group.title)
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(.primary)
+                .lineLimit(1)
+                .frame(width: avatarSize + 6, height: titleHeight)
         }
-        .id(group.id)
+        .frame(width: avatarSize + 6, height: titleHeight + 8 + avatarSize + 12)
+        .onTapGesture {
+            handleTap()
+        }
     }
     
     @ViewBuilder
