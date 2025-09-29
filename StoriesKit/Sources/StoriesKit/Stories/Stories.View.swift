@@ -48,7 +48,7 @@ extension Stories {
                             avatarNamespace: avatarNamespace,
                             stateManager: viewModel.stateManager
                         )
-                        .onAppear {
+                        .onFirstAppear {
                             isFirstAppearance = false
                         }
                     } else {
@@ -57,7 +57,7 @@ extension Stories {
                 }
                 .ignoresSafeArea()
             }
-            .onAppear {
+            .onFirstAppear {
                 viewModel.send(.didAppear)
             }
         }
@@ -193,10 +193,10 @@ extension Stories {
                     )
                 }
             } else {
-                group.pages.map { story in
+                group.pages.map { page in
                     .init(
                         progress: 0.0,
-                        duration: story.duration
+                        duration: page.duration
                     )
                 }
             }

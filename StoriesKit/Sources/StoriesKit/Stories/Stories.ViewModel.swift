@@ -174,8 +174,6 @@ private extension Stories.ViewModel {
 
         guard let group else { return }
 
-        timer?.stop()
-
         let firstPage = group.pages.first
 
         stateManager.send(.didSwitchGroup(group.id))
@@ -237,7 +235,7 @@ private extension Stories.ViewModel {
         let nextPageIndex = currentPageIndex + 1
 
         var groups = state.groups
-        guard let groupIndex = groups.firstIndex(where: { $0.id == current.group.id }) else { return }
+        guard let groupIndex = groups.firstIndex(where: { $0 == current.group }) else { return }
 
         let group = groups[groupIndex]
         var pages = groups[groupIndex].pages
@@ -253,6 +251,7 @@ private extension Stories.ViewModel {
             isViewed: group.isViewed
         )
 
+        let updatedGroup = groups[groupIndex]
         let nextPage = pages[nextPageIndex]
 
         state = .init(
@@ -262,7 +261,7 @@ private extension Stories.ViewModel {
                 duration: nextPage.duration
             ),
             current: .init(
-                group: current.group,
+                group: updatedGroup,
                 page: nextPage
             ),
             isPaused: false
@@ -277,7 +276,7 @@ private extension Stories.ViewModel {
         let prevPageIndex = currentPageIndex - 1
 
         var groups = state.groups
-        guard let groupIndex = groups.firstIndex(where: { $0.id == current.group.id }) else { return }
+        guard let groupIndex = groups.firstIndex(where: { $0 == current.group }) else { return }
 
         let group = groups[groupIndex]
         var pages = groups[groupIndex].pages
@@ -293,7 +292,8 @@ private extension Stories.ViewModel {
             isViewed: group.isViewed
         )
         
-        let prevPage = current.group.pages[prevPageIndex]
+        let updatedGroup = groups[groupIndex]
+        let prevPage = pages[prevPageIndex]
 
         state = .init(
             groups: groups,
@@ -302,7 +302,7 @@ private extension Stories.ViewModel {
                 duration: prevPage.duration
             ),
             current: .init(
-                group: current.group,
+                group: updatedGroup,
                 page: prevPage
             ),
             isPaused: false
