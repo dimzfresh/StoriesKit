@@ -187,11 +187,15 @@ private extension Stories.ViewModel {
         guard let group else { return }
 
         let updatedGroup = state.groups.first(where: { $0.id == group.id }) ?? group
-        // Если есть непросмотренные — берем первую непросмотренную,
-        // иначе оставляем последнюю активную страницу пользователя для этой группы,
-        // иначе fallback на первую страницу группы
         let lastActiveForGroup = state.current?.activePages[group.id]
-        let startPage = updatedGroup.pages.first { !$0.isViewed } ?? lastActiveForGroup ?? updatedGroup.pages.first
+        let startPage: StoriesPageModel?
+        
+        if let lastActive = lastActiveForGroup,
+           let lastActiveIndex = updatedGroup.pages.firstIndex(where: { $0.id == lastActive.id }) {
+            startPage = updatedGroup.pages[lastActiveIndex]
+        } else {
+            startPage = updatedGroup.pages.first { !$0.isViewed } ?? updatedGroup.pages.first
+        }
 
         stateManager.send(.didSwitchGroup(group.id))
 
@@ -287,7 +291,8 @@ private extension Stories.ViewModel {
             pages: pages
         )
         
-        let updatedActivePages = setActivePage(for: state.current?.selectedGroup.id ?? "", page: getCurrentPage())
+        let currentActivePage = getCurrentPage()
+        let updatedActivePages = setActivePage(for: state.current?.selectedGroup.id ?? "", page: currentActivePage)
         updateState(
             groups: groups,
             progress: state.progressBar.progress,

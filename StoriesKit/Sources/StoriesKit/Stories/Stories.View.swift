@@ -191,14 +191,14 @@ extension Stories {
                     let isViewed = isPageCompleted(page, in: group)
 
                     return .init(
-                        progress: isViewed ? 1.0 : (isCurrent ? viewModel.state.progressBar.progress : 0.0),
+                        progress: isCurrent ? viewModel.state.progressBar.progress : isViewed ? 1.0 : 0.0,
                         duration: page.duration
                     )
                 }
             } else {
                 group.pages.map { page in
                     .init(
-                        progress: page.isViewed ? 1.0 : 0.0,
+                        progress: page.isViewed && group.pages.count > 1 ? 1.0 : 0.0,
                         duration: page.duration
                     )
                 }
