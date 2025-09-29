@@ -175,9 +175,9 @@ extension Stories {
 
         private func getCurrentPageForGroup(_ group: StoriesGroupModel) -> StoriesPageModel? {
             if viewModel.state.current?.group.id == group.id {
-                return viewModel.state.current?.page
+                viewModel.state.current?.page
             } else {
-                return group.pages.first { !$0.isViewed } ?? group.pages.first
+                group.pages.first { !$0.isViewed } ?? group.pages.first
             }
         }
 
