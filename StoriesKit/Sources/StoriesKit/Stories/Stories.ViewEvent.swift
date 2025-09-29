@@ -6,11 +6,15 @@ extension Stories {
         case didAppear
         case didTapNext
         case didTapPrevious
-        case didSwitchGroup(String) // Group ID
-        case didSwitchPage(String) // Page ID
+        case didSwitchGroup(GroupDirection)
         case didDismiss
         case didPauseTimer
         case didResumeTimer
         case didTapButtonLink(URL)
+
+        enum GroupDirection: Hashable {
+            case next
+            case previous
+        }
     }
 }

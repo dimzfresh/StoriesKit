@@ -154,9 +154,9 @@ final class StoriesDataModel: ObservableObject {
                 title: currentPage.title,
                 subtitle: currentPage.subtitle,
                 backgroundColor: currentPage.backgroundColor,
+                mediaSource: currentPage.mediaSource,
                 isViewed: isViewed,
                 button: currentPage.button,
-                mediaSource: currentPage.mediaSource,
                 duration: currentPage.duration
             )
             

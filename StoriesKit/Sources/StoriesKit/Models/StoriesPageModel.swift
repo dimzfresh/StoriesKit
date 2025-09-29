@@ -16,9 +16,9 @@ public struct StoriesPageModel: Hashable {
         title: AttributedString,
         subtitle: AttributedString?,
         backgroundColor: UIColor,
+        mediaSource: StoriesMediaModel,
         isViewed: Bool = false,
         button: StoriesPageModel.Button? = nil,
-        mediaSource: StoriesMediaModel,
         duration: TimeInterval = 4.0
     ) {
         self.id = id
@@ -29,6 +29,19 @@ public struct StoriesPageModel: Hashable {
         self.button = button
         self.mediaSource = mediaSource
         self.duration = duration
+    }
+
+    func updateViewed(_ isViewed: Bool) -> Self {
+        .init(
+            id: id,
+            title: title,
+            subtitle: subtitle,
+            backgroundColor: backgroundColor,
+            mediaSource: mediaSource,
+            isViewed: isViewed,
+            button: button,
+            duration: duration
+        )
     }
 
     /// Button configuration for story pages

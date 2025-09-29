@@ -174,7 +174,11 @@ extension Stories {
         }
 
         private func getCurrentPageForGroup(_ group: StoriesGroupModel) -> StoriesPageModel? {
-            viewModel.state.current?.group == group ? viewModel.state.current?.page : group.pages.first
+            if viewModel.state.current?.group == group {
+                return viewModel.state.current?.page
+            } else {
+                return group.pages.first { !$0.isViewed } ?? group.pages.first
+            }
         }
 
         private func getProgressBarsForGroup(_ group: StoriesGroupModel) -> [Stories.ViewState.ProgressBar] {
@@ -210,12 +214,6 @@ extension Stories {
         }
         
         // MARK: - Helper Methods for New ViewState
-        
-        private func getCurrentGroupIndex() -> Int {
-            guard let current = viewModel.state.current else { return 0 }
-
-            return viewModel.state.groups.firstIndex(where: { $0 == current.group }) ?? 0
-        }
         
         private func isStoryCompleted(_ page: StoriesPageModel, in group: StoriesGroupModel) -> Bool {
             guard let current = viewModel.state.current,
@@ -368,17 +366,7 @@ extension Stories {
         }
 
         private func performGroupSwitch(translation: CGFloat) {
-            guard let currentGroupId = viewModel.state.current?.group.id else { return }
-
-            let currentIndex = getCurrentGroupIndex()
-
-            if translation > 0 && currentIndex > 0 {
-                let previousGroup = viewModel.state.groups[currentIndex - 1]
-                viewModel.send(.didSwitchGroup(previousGroup.id))
-            } else if translation < 0 && currentIndex < viewModel.state.groups.count - 1 {
-                let nextGroup = viewModel.state.groups[currentIndex + 1]
-                viewModel.send(.didSwitchGroup(nextGroup.id))
-            }
+            viewModel.send(.didSwitchGroup(translation > 0 ? .previous : .next))
         }
 
         private func determineDragDirection(_ translation: CGSize) -> DragDirection? {

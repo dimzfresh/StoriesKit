@@ -83,10 +83,8 @@ private extension Stories.ViewModel {
             handleNextTap()
         case .didTapPrevious:
             handlePreviousTap()
-        case let .didSwitchGroup(groupId):
-            switchToGroup(groupId)
-        case let .didSwitchPage(pageId):
-            switchToPage(pageId)
+        case let .didSwitchGroup(direction):
+            switchToGroup(direction)
         case .didDismiss:
             stateManager.send(.didToggleGroup(nil))
         case .didPauseTimer:
@@ -140,11 +138,7 @@ private extension Stories.ViewModel {
         if canMoveToNextPage() {
             moveToNextPage()
         } else if canMoveToNextGroup() {
-            guard let current = state.current else { return }
-
-            let currentGroupIndex = state.groups.firstIndex(where: { $0 == current.group }) ?? 0
-            let nextGroup = state.groups[currentGroupIndex + 1]
-            switchToGroup(nextGroup.id)
+            switchToGroup(.next)
         } else {
             send(.didDismiss)
         }
@@ -154,11 +148,7 @@ private extension Stories.ViewModel {
         if canMoveToPreviousPage() {
             moveToPreviousPage()
         } else if canMoveToPreviousGroup() {
-            guard let current = state.current else { return }
-
-            let currentGroupIndex = state.groups.firstIndex(where: { $0 == current.group }) ?? 0
-            let previousGroup = state.groups[currentGroupIndex - 1]
-            switchToGroup(previousGroup.id)
+            switchToGroup(.previous)
         }
     }
 
@@ -170,8 +160,19 @@ private extension Stories.ViewModel {
         }
     }
 
-    func switchToGroup(_ groupId: String) {
-        guard let group = state.groups.first(where: { $0.id == groupId }) else { return }
+    func switchToGroup(_ direction: Stories.ViewEvent.GroupDirection) {
+        guard let currentGroup = state.current?.group,
+              let currentIndex = state.groups.firstIndex(of: currentGroup) else { return }
+
+        var group: StoriesGroupModel?
+
+        if direction == .next, canMoveToNextGroup() {
+            group = state.groups[currentIndex + 1]
+        } else if direction == .previous, canMoveToPreviousGroup() {
+            group = state.groups[currentIndex - 1]
+        }
+
+        guard let group else { return }
 
         timer?.stop()
 
@@ -186,27 +187,6 @@ private extension Stories.ViewModel {
                 duration: firstPage?.duration ?? 5
             ),
             current: firstPage.map { .init(group: group, page: $0) },
-            isPaused: false
-        )
-        startCurrentPageTimer()
-    }
-    
-    func switchToPage(_ pageId: String) {
-        guard let current = state.current,
-              let targetPage = current.group.pages.first(where: { $0.id == pageId }) else { return }
-
-        stateManager.send(.didViewPage(current.group.id, current.page.id))
-
-        state = .init(
-            groups: state.groups,
-            progressBar: .init(
-                progress: 0,
-                duration: targetPage.duration
-            ),
-            current: .init(
-                group: current.group,
-                page: targetPage
-            ),
             isPaused: false
         )
         startCurrentPageTimer()
@@ -255,10 +235,28 @@ private extension Stories.ViewModel {
 
         let currentPageIndex = current.group.pages.firstIndex(where: { $0 == current.page }) ?? 0
         let nextPageIndex = currentPageIndex + 1
-        let nextPage = current.group.pages[nextPageIndex]
+
+        var groups = state.groups
+        guard let groupIndex = groups.firstIndex(where: { $0.id == current.group.id }) else { return }
+
+        let group = groups[groupIndex]
+        var pages = groups[groupIndex].pages
+        for index in 0..<currentPageIndex {
+            pages[index] = pages[index].updateViewed(true)
+        }
+
+        groups[groupIndex] = .init(
+            id: group.id,
+            title: group.title,
+            avatarImage: group.avatarImage,
+            pages: pages,
+            isViewed: group.isViewed
+        )
+
+        let nextPage = pages[nextPageIndex]
 
         state = .init(
-            groups: state.groups,
+            groups: groups,
             progressBar: .init(
                 progress: 0,
                 duration: nextPage.duration
@@ -277,10 +275,28 @@ private extension Stories.ViewModel {
 
         let currentPageIndex = current.group.pages.firstIndex(where: { $0 == current.page }) ?? 0
         let prevPageIndex = currentPageIndex - 1
+
+        var groups = state.groups
+        guard let groupIndex = groups.firstIndex(where: { $0.id == current.group.id }) else { return }
+
+        let group = groups[groupIndex]
+        var pages = groups[groupIndex].pages
+        for index in currentPageIndex..<pages.count {
+            pages[index] = pages[index].updateViewed(false)
+        }
+
+        groups[groupIndex] = .init(
+            id: group.id,
+            title: group.title,
+            avatarImage: group.avatarImage,
+            pages: pages,
+            isViewed: group.isViewed
+        )
+        
         let prevPage = current.group.pages[prevPageIndex]
 
         state = .init(
-            groups: state.groups,
+            groups: groups,
             progressBar: .init(
                 progress: 0,
                 duration: prevPage.duration
