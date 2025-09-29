@@ -101,19 +101,19 @@ private extension Stories.ViewModel {
     // MARK: - Timer Management
 
     private func startCurrentPageTimer() {
-        guard let currentStory = getCurrentStory() else { return }
+        guard let currentPage = getCurrentPage() else { return }
 
-        timer?.start(duration: currentStory.duration)
-        
+        timer?.start(duration: currentPage.duration)
+
         if let current = state.current {
             stateManager.send(.didViewPage(current.group.id, current.page.id))
         }
     }
 
     private func resumeCurrentPageTimer() {
-        guard let currentStory = getCurrentStory() else { return }
+        guard let currentPage = getCurrentPage() else { return }
 
-        timer?.resume(duration: currentStory.duration)
+        timer?.resume(duration: currentPage.duration)
     }
 
     private func updateProgress(_ progress: CGFloat) {
@@ -177,6 +177,8 @@ private extension Stories.ViewModel {
 
         let firstPage = group.pages.first
 
+        stateManager.send(.didSwitchGroup(group.id))
+
         state = .init(
             groups: state.groups,
             progressBar: .init(
@@ -192,6 +194,8 @@ private extension Stories.ViewModel {
     func switchToPage(_ pageId: String) {
         guard let current = state.current,
               let targetPage = current.group.pages.first(where: { $0.id == pageId }) else { return }
+
+        stateManager.send(.didViewPage(current.group.id, current.page.id))
 
         state = .init(
             groups: state.groups,
@@ -210,7 +214,7 @@ private extension Stories.ViewModel {
     
     // MARK: - Helper Methods
     
-    private func getCurrentStory() -> StoriesPageModel? {
+    private func getCurrentPage() -> StoriesPageModel? {
         state.current?.page
     }
     

@@ -375,11 +375,9 @@ extension Stories {
             if translation > 0 && currentIndex > 0 {
                 let previousGroup = viewModel.state.groups[currentIndex - 1]
                 viewModel.send(.didSwitchGroup(previousGroup.id))
-                viewModel.stateManager.send(.didSwitchGroup(previousGroup.id))
             } else if translation < 0 && currentIndex < viewModel.state.groups.count - 1 {
                 let nextGroup = viewModel.state.groups[currentIndex + 1]
                 viewModel.send(.didSwitchGroup(nextGroup.id))
-                viewModel.stateManager.send(.didSwitchGroup(nextGroup.id))
             }
         }
 
