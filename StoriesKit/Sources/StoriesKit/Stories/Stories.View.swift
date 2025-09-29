@@ -186,19 +186,24 @@ extension Stories {
 
         private func getProgressBarsForGroup(_ group: StoriesGroupModel) -> [Stories.ViewState.ProgressBar] {
             if group.id == viewModel.state.current?.selectedGroup.id {
-                group.pages.map { page in
+                return group.pages.map { page in
                     let isCurrent = page.id == viewModel.state.current?.activePages[group.id]?.id
                     let isViewed = isPageCompleted(page, in: group)
-
                     return .init(
                         progress: isCurrent ? viewModel.state.progressBar.progress : isViewed ? 1.0 : 0.0,
                         duration: page.duration
                     )
                 }
             } else {
-                group.pages.map { page in
-                    .init(
-                        progress: page.isViewed && group.pages.count > 1 ? 1.0 : 0.0,
+                let currentPageId = viewModel.state.current?.activePages[group.id]?.id
+                let currentPageIndex = group.pages.firstIndex(where: { $0.id == currentPageId }) ?? -1
+                
+                return group.pages.enumerated().map { index, page in
+                    let isCurrent = page.id == currentPageId
+                    let progress = isCurrent ? 0.0 : (index < currentPageIndex ? (page.isViewed ? 1.0 : 0.0) : 0.0)
+
+                    return .init(
+                        progress: progress,
                         duration: page.duration
                     )
                 }
