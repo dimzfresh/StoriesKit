@@ -8,9 +8,7 @@ extension Stories {
 
         @State private var verticalDragOffset: CGFloat = 0
         @State private var dragDirection: DragDirection?
-        @State private var isScrolling = false
         @State private var isFirstAppearance = true
-        @State private var scrollViewProxy: ScrollViewProxy?
 
         let avatarNamespace: Namespace.ID
 
@@ -87,7 +85,7 @@ extension Stories {
                             }
                         }
                     }
-                    .onAppear {
+                    .onFirstAppear {
                         handleScrollViewAppear(proxy: proxy)
                     }
                     .onChange(of: viewModel.state.current) { current in
@@ -98,7 +96,7 @@ extension Stories {
                     .disabled(dragDirection == .vertical)
                     .ignoresSafeArea()
                     .offset(y: verticalDragOffset)
-                    .simultaneousGesture(createDragGesture())
+                    .simultaneousGesture(createDragGesture(proxy: proxy))
                     .onLongPressGesture(
                         minimumDuration: Constants.longPressDuration,
                         perform: {},
@@ -167,8 +165,10 @@ extension Stories {
             if translation > threshold || velocity > dismissVelocity {
                 viewModel.send(.didDismiss)
             } else {
-                withAnimation(.easeInOut(duration: Constants.returnAnimationDuration)) {
-                    verticalDragOffset = 0
+                Task {
+                    withAnimation(.easeInOut(duration: Constants.returnAnimationDuration)) {
+                        verticalDragOffset = 0
+                    }
                 }
             }
         }
@@ -229,39 +229,32 @@ extension Stories {
 
         // MARK: - Gesture Creation
 
-        private func createDragGesture() -> some Gesture {
+        private func createDragGesture(proxy: ScrollViewProxy) -> some Gesture {
             DragGesture(minimumDistance: Constants.dragThreshold)
-                .onChanged(handleDragChanged)
-                .onEnded(handleDragEnded)
+                .onChanged { value in
+                    handleDragChanged(value, proxy: proxy)
+                }
+                .onEnded { value in
+                    handleDragEnded(value, proxy: proxy)
+                }
         }
 
         // MARK: - Event Handlers
 
         private func handleScrollViewAppear(proxy: ScrollViewProxy) {
-            scrollViewProxy = proxy
+            guard let current = viewModel.state.current else { return }
 
-            Task {
-                if let current = viewModel.state.current {
-                    proxy.scrollTo(current.group.id, anchor: .center)
-                }
-            }
+            proxy.scrollTo(current.group.id, anchor: .center)
         }
 
         private func handleCurrentChange(
             proxy: ScrollViewProxy,
             groupId: String
         ) {
-            isScrolling = true
-            scrollViewProxy = proxy
-
             Task {
                 withAnimation(.easeInOut(duration: Constants.animationDuration)) {
                     proxy.scrollTo(groupId, anchor: .center)
                 }
-
-                await delay()
-
-                isScrolling = false
             }
         }
 
@@ -273,7 +266,10 @@ extension Stories {
             }
         }
 
-        private func handleDragChanged(_ value: DragGesture.Value) {
+        private func handleDragChanged(
+            _ value: DragGesture.Value,
+            proxy: ScrollViewProxy
+        ) {
             viewModel.send(.didPauseTimer)
 
             if let dragDirection {
@@ -296,7 +292,10 @@ extension Stories {
             }
         }
 
-        private func handleDragEnded(_ value: DragGesture.Value) {
+        private func handleDragEnded(
+            _ value: DragGesture.Value,
+            proxy: ScrollViewProxy
+        ) {
             guard let dragDirection else { return }
 
             switch dragDirection {
@@ -308,7 +307,8 @@ extension Stories {
             case .horizontal:
                 handleHorizontalSwipe(
                     translation: value.translation.width,
-                    velocity: value.velocity.width
+                    velocity: value.velocity.width,
+                    proxy: proxy
                 )
             }
 
@@ -318,7 +318,8 @@ extension Stories {
 
         private func handleHorizontalSwipe(
             translation: CGFloat,
-            velocity: CGFloat
+            velocity: CGFloat,
+            proxy: ScrollViewProxy
         ) {
             guard dragDirection == .horizontal else { return }
 
@@ -328,23 +329,23 @@ extension Stories {
             if shouldSwitch {
                 performGroupSwitch(translation: translation)
             } else {
-                scrollToCurrentGroup(swipeDirection: translation > 0 ? .right : .left)
+                scrollToCurrentGroup(
+                    swipeDirection: translation > 0 ? .right : .left,
+                    proxy: proxy
+                )
             }
         }
 
-        private func scrollToCurrentGroup(swipeDirection: SwipeDirection) {
-            guard let scrollViewProxy, let current = viewModel.state.current else { return }
-
-            isScrolling = true
+        private func scrollToCurrentGroup(
+            swipeDirection: SwipeDirection,
+            proxy: ScrollViewProxy
+        ) {
+            guard let current = viewModel.state.current else { return }
 
             Task {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    scrollViewProxy.scrollTo(current.group.id, anchor: .center)
+                    proxy.scrollTo(current.group.id, anchor: .center)
                 }
-
-                await delay()
-
-                isScrolling = false
             }
         }
 
@@ -394,10 +395,6 @@ extension Stories {
             let angleInDegrees = angle * 180 / .pi
 
             return angleInDegrees > Constants.angleThreshold ? .vertical : .horizontal
-        }
-
-        private func delay(_ duration: Double = Constants.animationDuration) async {
-            try? await Task.sleep(nanoseconds: UInt64(duration * 1_000_000_000))
         }
     }
 
