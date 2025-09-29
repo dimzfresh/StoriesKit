@@ -38,7 +38,7 @@ extension Stories {
                             verticalOffset: verticalDragOffset,
                             progressBars: getProgressBarsForGroup(group),
                             onButtonAction: handleButtonAction,
-                            isCurrentGroup: viewModel.state.current?.group == group,
+                            isCurrentGroup: viewModel.state.current?.group.id == group.id,
                             onTapPrevious: {
                                 viewModel.send(.didTapPrevious)
                             },
@@ -113,7 +113,7 @@ extension Stories {
                 verticalOffset: verticalDragOffset,
                 progressBars: getProgressBarsForGroup(group),
                 onButtonAction: handleButtonAction,
-                isCurrentGroup: viewModel.state.current?.group == group,
+                isCurrentGroup: viewModel.state.current?.group.id == group.id,
                 onTapPrevious: {
                     viewModel.send(.didTapPrevious)
                 },
@@ -174,7 +174,7 @@ extension Stories {
         }
 
         private func getCurrentPageForGroup(_ group: StoriesGroupModel) -> StoriesPageModel? {
-            if viewModel.state.current?.group == group {
+            if viewModel.state.current?.group.id == group.id {
                 return viewModel.state.current?.page
             } else {
                 return group.pages.first { !$0.isViewed } ?? group.pages.first
@@ -182,20 +182,20 @@ extension Stories {
         }
 
         private func getProgressBarsForGroup(_ group: StoriesGroupModel) -> [Stories.ViewState.ProgressBar] {
-            if group == viewModel.state.current?.group {
+            if group.id == viewModel.state.current?.group.id {
                 group.pages.map { page in
-                    let isCurrentStory = page == viewModel.state.current?.page
-                    let isCompletedStory = isStoryCompleted(page, in: group)
+                    let isCurrent = page.id == viewModel.state.current?.page.id
+                    let isViewed = isPageCompleted(page, in: group)
 
                     return .init(
-                        progress: isCompletedStory ? 1.0 : (isCurrentStory ? viewModel.state.progressBar.progress : 0.0),
+                        progress: isViewed ? 1.0 : (isCurrent ? viewModel.state.progressBar.progress : 0.0),
                         duration: page.duration
                     )
                 }
             } else {
                 group.pages.map { page in
                     .init(
-                        progress: 0.0,
+                        progress: page.isViewed ? 1.0 : 0.0,
                         duration: page.duration
                     )
                 }
@@ -215,14 +215,14 @@ extension Stories {
         
         // MARK: - Helper Methods for New ViewState
         
-        private func isStoryCompleted(_ page: StoriesPageModel, in group: StoriesGroupModel) -> Bool {
+        private func isPageCompleted(_ page: StoriesPageModel, in group: StoriesGroupModel) -> Bool {
             guard let current = viewModel.state.current,
-                  let currentStoryIndex = group.pages.firstIndex(where: { $0 == current.page }),
-                  let storyIndex = group.pages.firstIndex(where: { $0 == page }) else {
+                  let currentPageIndex = group.pages.firstIndex(where: { $0.id == current.page.id }),
+                  let pageIndex = group.pages.firstIndex(where: { $0.id == page.id }) else {
                 return false
             }
 
-            return storyIndex < currentStoryIndex
+            return pageIndex < currentPageIndex
         }
 
         // MARK: - Gesture Creation
