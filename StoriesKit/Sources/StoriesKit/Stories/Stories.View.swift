@@ -31,14 +31,14 @@ extension Stories {
                     .ignoresSafeArea()
 
                 GeometryReader { geometry in
-                    if isFirstAppearance, let group = viewModel.state.current?.group {
+                    if isFirstAppearance, let group = viewModel.state.current?.selectedGroup {
                         PageView(
                             group: group,
                             currentPage: getCurrentPageForGroup(group),
                             verticalOffset: verticalDragOffset,
                             progressBars: getProgressBarsForGroup(group),
                             onButtonAction: handleButtonAction,
-                            isCurrentGroup: viewModel.state.current?.group.id == group.id,
+                            isCurrentGroup: viewModel.state.current?.selectedGroup.id == group.id,
                             onTapPrevious: {
                                 viewModel.send(.didTapPrevious)
                             },
@@ -89,7 +89,7 @@ extension Stories {
                         handleScrollViewAppear(proxy: proxy)
                     }
                     .onChange(of: viewModel.state.current) { current in
-                        guard let groupId = current?.group.id else { return }
+                        guard let groupId = current?.selectedGroup.id else { return }
 
                         handleCurrentChange(proxy: proxy, groupId: groupId)
                     }
@@ -113,7 +113,7 @@ extension Stories {
                 verticalOffset: verticalDragOffset,
                 progressBars: getProgressBarsForGroup(group),
                 onButtonAction: handleButtonAction,
-                isCurrentGroup: viewModel.state.current?.group.id == group.id,
+                isCurrentGroup: viewModel.state.current?.selectedGroup.id == group.id,
                 onTapPrevious: {
                     viewModel.send(.didTapPrevious)
                 },
@@ -174,17 +174,20 @@ extension Stories {
         }
 
         private func getCurrentPageForGroup(_ group: StoriesGroupModel) -> StoriesPageModel? {
-            if viewModel.state.current?.group.id == group.id {
-                viewModel.state.current?.page
+            if viewModel.state.current?.selectedGroup.id == group.id {
+                return viewModel.state.current?.activePages[group.id]
             } else {
-                group.pages.first { !$0.isViewed } ?? group.pages.first
+                if let activePage = viewModel.state.current?.activePages[group.id] {
+                    return activePage
+                }
+                return group.pages.first { !$0.isViewed } ?? group.pages.first
             }
         }
 
         private func getProgressBarsForGroup(_ group: StoriesGroupModel) -> [Stories.ViewState.ProgressBar] {
-            if group.id == viewModel.state.current?.group.id {
+            if group.id == viewModel.state.current?.selectedGroup.id {
                 group.pages.map { page in
-                    let isCurrent = page.id == viewModel.state.current?.page.id
+                    let isCurrent = page.id == viewModel.state.current?.activePages[group.id]?.id
                     let isViewed = isPageCompleted(page, in: group)
 
                     return .init(
@@ -217,7 +220,8 @@ extension Stories {
         
         private func isPageCompleted(_ page: StoriesPageModel, in group: StoriesGroupModel) -> Bool {
             guard let current = viewModel.state.current,
-                  let currentPageIndex = group.pages.firstIndex(where: { $0.id == current.page.id }),
+                  let activePage = current.activePages[group.id],
+                  let currentPageIndex = group.pages.firstIndex(where: { $0.id == activePage.id }),
                   let pageIndex = group.pages.firstIndex(where: { $0.id == page.id }) else {
                 return false
             }
@@ -242,7 +246,7 @@ extension Stories {
         private func handleScrollViewAppear(proxy: ScrollViewProxy) {
             guard let current = viewModel.state.current else { return }
 
-            proxy.scrollTo(current.group.id, anchor: .center)
+            proxy.scrollTo(current.selectedGroup.id, anchor: .center)
         }
 
         private func handleCurrentChange(
@@ -342,7 +346,7 @@ extension Stories {
 
             Task {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    proxy.scrollTo(current.group.id, anchor: .center)
+                    proxy.scrollTo(current.selectedGroup.id, anchor: .center)
                 }
             }
         }

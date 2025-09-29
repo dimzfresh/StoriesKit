@@ -57,12 +57,12 @@ struct StoryGroupItemView: View {
     var body: some View {
         VStack(spacing: 8) {
             ZStack {
-                Circle()
-                    .stroke(
-                        group.isViewed ? .gray.opacity(0.5) : .blue,
-                        lineWidth: 3
-                    )
-                    .frame(width: avatarSize + 6, height: avatarSize + 6)
+                SegmentedCircleView(
+                    segments: SegmentedCircleView.createSegments(
+                        for: group
+                    ),
+                    size: avatarSize + 6,
+                )
 
                 if group.id != stateManager.state.selectedGroupId {
                     avatarImageView

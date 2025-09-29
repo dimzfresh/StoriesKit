@@ -13,7 +13,7 @@ final class StoriesDataModel: ObservableObject {
     }
     
     private func generateStoriesData() {
-        storiesGroups = [
+        let storiesGroups = [
             StoriesGroupModel(
                 id: "taylor_swift",
                 title: "Taylor Swift",
@@ -23,16 +23,24 @@ final class StoriesDataModel: ObservableObject {
                         title: "New Album! 🎵",
                         subtitle: "Midnights is here!",
                         backgroundColor: .black,
-                        imageUrl: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=600&fit=crop&crop=center&auto=format&q=80"
+                        imageUrl: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=600&fit=crop&crop=center&auto=format&q=80",
+                        isViewed: true
                     ),
                     createStoryPage(
                         title: "Tour Life ✈️",
                         subtitle: "Eras Tour continues!",
                         backgroundColor: .black,
-                        imageUrl: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&h=600&fit=crop&crop=center&auto=format&q=80"
+                        imageUrl: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&h=600&fit=crop&crop=center&auto=format&q=80",
+                        isViewed: false
+                    ),
+                    createStoryPage(
+                        title: "Tour Life 🎶",
+                        subtitle: "Eras Tour continues!",
+                        backgroundColor: .black,
+                        imageUrl: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&h=600&fit=crop&crop=center&auto=format&q=80",
+                        isViewed: false
                     )
-                ],
-                isViewed: false
+                ]
             ),
             StoriesGroupModel(
                 id: "bad_bunny",
@@ -42,11 +50,11 @@ final class StoriesDataModel: ObservableObject {
                     createStoryPage(
                         title: "Un Verano Sin Ti 🌴",
                         subtitle: "Summer vibes!",
-                        backgroundColor: .systemBlue,
-                        imageUrl: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=600&fit=crop&crop=center&auto=format&q=80"
+                        backgroundColor: .black,
+                        imageUrl: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=600&fit=crop&crop=center&auto=format&q=80",
+                        isViewed: true
                     )
-                ],
-                isViewed: true
+                ]
             ),
             StoriesGroupModel(
                 id: "the_weeknd",
@@ -59,8 +67,7 @@ final class StoriesDataModel: ObservableObject {
                         backgroundColor: .black,
                         imageUrl: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=600&fit=crop&crop=center&auto=format&q=80"
                     )
-                ],
-                isViewed: false
+                ]
             ),
             StoriesGroupModel(
                 id: "drake",
@@ -70,17 +77,18 @@ final class StoriesDataModel: ObservableObject {
                     createStoryPage(
                         title: "Her Loss 🎤",
                         subtitle: "New album out now!",
-                        backgroundColor: .systemPurple,
-                        imageUrl: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&h=600&fit=crop&crop=center&auto=format&q=80"
+                        backgroundColor: .black,
+                        imageUrl: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&h=600&fit=crop&crop=center&auto=format&q=80",
+                        isViewed: true
                     ),
                     createStoryPage(
                         title: "OVO Sound 🦉",
                         subtitle: "Label updates",
-                        backgroundColor: .systemPurple,
-                        imageUrl: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&h=600&fit=crop&crop=center&auto=format&q=80"
+                        backgroundColor: .black,
+                        imageUrl: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&h=600&fit=crop&crop=center&auto=format&q=80",
+                        isViewed: true
                     )
-                ],
-                isViewed: true
+                ]
             ),
             StoriesGroupModel(
                 id: "ariana_grande",
@@ -90,11 +98,10 @@ final class StoriesDataModel: ObservableObject {
                     createStoryPage(
                         title: "Positions 💖",
                         subtitle: "Album anniversary!",
-                        backgroundColor: .systemPink,
+                        backgroundColor: .black,
                         imageUrl: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=600&fit=crop&crop=center&auto=format&q=80"
                     )
-                ],
-                isViewed: false
+                ]
             ),
             StoriesGroupModel(
                 id: "billie_eilish",
@@ -104,19 +111,25 @@ final class StoriesDataModel: ObservableObject {
                     createStoryPage(
                         title: "Happier Than Ever 🌙",
                         subtitle: "New music coming soon",
-                        backgroundColor: .systemGreen,
-                        imageUrl: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=600&fit=crop&crop=center&auto=format&q=80"
+                        backgroundColor: .black,
+                        imageUrl: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=600&fit=crop&crop=center&auto=format&q=80",
+                        isViewed: true
                     ),
                     createStoryPage(
                         title: "Studio Session 🎧",
                         subtitle: "Working on new album",
-                        backgroundColor: .systemGreen,
-                        imageUrl: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=600&fit=crop&crop=center&auto=format&q=80"
+                        backgroundColor: .black,
+                        imageUrl: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=600&fit=crop&crop=center&auto=format&q=80",
+                        isViewed: false
                     )
-                ],
-                isViewed: true
+                ]
             )
         ]
+
+        let firstGroups = storiesGroups.filter { $0.pages.contains(where: { !$0.isViewed }) }
+        let viewedGroups = storiesGroups.filter { $0.pages.allSatisfy(\.isViewed) }
+
+        self.storiesGroups = firstGroups + viewedGroups
     }
     
     func generateRandomImages() {
@@ -135,13 +148,6 @@ final class StoriesDataModel: ObservableObject {
     
     func markPageAsViewed(groupId: String, pageId: String) {
         updatePageViewedStatus(groupId: groupId, pageId: pageId, isViewed: true)
-        
-        if let group = storiesGroups.first(where: { $0.id == groupId }) {
-            updateGroupViewedStatus(
-                groupId: groupId,
-                isViewed: group.pages.allSatisfy(\.isViewed)
-            )
-        }
     }
 
     private func updatePageViewedStatus(groupId: String, pageId: String, isViewed: Bool) {
@@ -167,29 +173,22 @@ final class StoriesDataModel: ObservableObject {
                 id: storiesGroups[groupIndex].id,
                 title: storiesGroups[groupIndex].title,
                 avatarImage: storiesGroups[groupIndex].avatarImage,
-                pages: updatedPages,
-                isViewed: storiesGroups[groupIndex].isViewed
+                pages: updatedPages
             )
         }
+
+        let firstGroups = storiesGroups.filter { $0.pages.contains(where: { !$0.isViewed }) }
+        let viewedGroups = storiesGroups.filter { $0.pages.allSatisfy(\.isViewed) }
+
+        self.storiesGroups = firstGroups + viewedGroups
     }
-    
-    private func updateGroupViewedStatus(groupId: String, isViewed: Bool) {
-        if let index = storiesGroups.firstIndex(where: { $0.id == groupId }) {
-            storiesGroups[index] = StoriesGroupModel(
-                id: storiesGroups[index].id,
-                title: storiesGroups[index].title,
-                avatarImage: storiesGroups[index].avatarImage,
-                pages: storiesGroups[index].pages,
-                isViewed: isViewed
-            )
-        }
-    }
-    
+
     private func createStoryPage(
         title: String,
         subtitle: String,
         backgroundColor: UIColor,
-        imageUrl: String
+        imageUrl: String,
+        isViewed: Bool = false
     ) -> StoriesPageModel {
         var titleAttributed = AttributedString(title)
         titleAttributed.font = .system(size: 24, weight: .bold)
@@ -206,6 +205,7 @@ final class StoriesDataModel: ObservableObject {
             mediaSource: StoriesMediaModel(
                 media: .image(.remote(URL(string: imageUrl)!))
             ),
+            isViewed: isViewed,
             duration: 5.0
         )
     }
