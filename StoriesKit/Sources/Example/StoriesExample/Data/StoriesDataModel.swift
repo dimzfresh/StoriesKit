@@ -126,8 +126,8 @@ final class StoriesDataModel: ObservableObject {
             )
         ]
 
-        let firstGroups = storiesGroups.filter { $0.pages.contains(where: { !$0.isViewed }) }
-        let viewedGroups = storiesGroups.filter { $0.pages.allSatisfy(\.isViewed) }
+        let firstGroups = storiesGroups.filter { $0.pages.contains(where: { !$0.isViewed }) }.sorted { $0.id < $1.id }
+        let viewedGroups = storiesGroups.filter { $0.pages.allSatisfy(\.isViewed) }.sorted { $0.id < $1.id }
 
         self.storiesGroups = firstGroups + viewedGroups
     }
@@ -177,8 +177,8 @@ final class StoriesDataModel: ObservableObject {
             )
         }
 
-        let firstGroups = storiesGroups.filter { $0.pages.contains(where: { !$0.isViewed }) }
-        let viewedGroups = storiesGroups.filter { $0.pages.allSatisfy(\.isViewed) }
+        let firstGroups = storiesGroups.filter { $0.pages.contains(where: { !$0.isViewed }) }.sorted { $0.id < $1.id }
+        let viewedGroups = storiesGroups.filter { $0.pages.allSatisfy(\.isViewed) }.sorted { $0.id < $1.id }
 
         self.storiesGroups = firstGroups + viewedGroups
     }

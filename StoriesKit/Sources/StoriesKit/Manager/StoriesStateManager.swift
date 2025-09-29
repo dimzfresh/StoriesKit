@@ -37,7 +37,7 @@ public final class StoriesStateManager: ObservableObject {
         case didToggleGroup(String?)
         case didSwitchGroup(String)
         case didOpenLink(String)
-        case didViewPage(String, String) // groupId, pageId
+        case didViewPage(String, String)
     }
 
     public struct State: Hashable {
