@@ -1,6 +1,5 @@
 import SwiftUI
 import UIKit
-import AVFoundation
 import Kingfisher
 
 /// Universal view for handling both images and videos in Stories
@@ -8,7 +7,7 @@ public struct StoriesMediaView<Placeholder, Failure>: View where Placeholder: Vi
     private let mediaModel: StoriesMediaModel
     private let placeholder: (() -> Placeholder)
     private let failure: (() -> Failure)
-    
+
     public init(
         mediaModel: StoriesMediaModel,
         @ViewBuilder placeholder: @escaping () -> Placeholder,
@@ -21,7 +20,10 @@ public struct StoriesMediaView<Placeholder, Failure>: View where Placeholder: Vi
 
     public init(
         mediaModel: StoriesMediaModel,
-        @ViewBuilder placeholder: @escaping () -> Placeholder
+        @ViewBuilder placeholder: @escaping () -> Placeholder,
+        onVideoPlay: (() -> Void)? = nil,
+        onVideoPause: (() -> Void)? = nil,
+        onFirstFrameExtracted: ((UIImage) -> Void)? = nil
     ) where Failure == EmptyView {
         self.mediaModel = mediaModel
         self.placeholder = placeholder
@@ -47,14 +49,12 @@ public struct StoriesMediaView<Placeholder, Failure>: View where Placeholder: Vi
                         .scaledToFill()
                 }
             case let .video(videoSource):
-                switch videoSource {
-                case let .local(asset):
-                    EmptyView()
-                case let .remote(url):
-                    EmptyView()
-                }
+                VideoPlayerView(
+                    videoSource: videoSource,
+                    isMuted: false,
+                    shouldLoop: true
+                )
             }
         }
     }
 }
-

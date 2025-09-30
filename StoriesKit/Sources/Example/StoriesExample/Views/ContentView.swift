@@ -80,12 +80,12 @@ struct ContentView: View {
                 ForEach(randomImages.prefix(5).indices, id: \.self) { index in
                     RoundedRectangle(cornerRadius: 12)
                         .fill(.clear)
-                        .frame(width: UIScreen.main.bounds.width - 32, height: 200)
+                        .frame(height: 200)
                         .overlay {
                             KFImage(URL(string: randomImages[index]))
                                 .resizable()
                                 .scaledToFill()
-                                .frame(width: UIScreen.main.bounds.width - 32, height: 200)
+                                .frame(height: 200)
                                 .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                         .clipped()

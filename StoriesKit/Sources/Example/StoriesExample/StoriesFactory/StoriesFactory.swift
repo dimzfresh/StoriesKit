@@ -25,6 +25,9 @@ enum StoriesFactory {
                         imageUrl: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&h=600&fit=crop&crop=center&auto=format&q=80",
                         isViewed: false
                     ),
+                    .init(mediaSource: .init(media: .video(.local(.init(
+                        url: Bundle.main.url(forResource: "video", withExtension: "mov")!
+                    ))))),
                     createStoryPage(
                         title: "Tour Life 🎶",
                         subtitle: "Eras Tour continues!",
