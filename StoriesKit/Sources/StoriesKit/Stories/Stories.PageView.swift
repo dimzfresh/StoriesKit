@@ -165,7 +165,10 @@ extension Stories {
             HStack(spacing: 0) {
                 avatarView(stateManager.model.avatar)
 
-                usernameView(stateManager.model.userName)
+                VStack(alignment: .leading, spacing: 2) {
+                    usernameView(stateManager.model.userName)
+                    dateView(stateManager.model.date)
+                }
 
                 Spacer()
 
@@ -201,8 +204,17 @@ extension Stories {
             .padding(model.padding)
         }
 
-        private func usernameView(_ model: StoriesModel.UserName) -> some SwiftUI.View {
+        private func usernameView(_ model: StoriesModel.Text) -> some SwiftUI.View {
             Text(group.title)
+                .lineLimit(model.numberOfLines)
+                .font(model.font)
+                .foregroundColor(model.color)
+                .multilineTextAlignment(model.alignment)
+                .padding(model.padding)
+        }
+
+        private func dateView(_ model: StoriesModel.Text) -> some SwiftUI.View {
+            Text(currentPage?.date ?? "")
                 .lineLimit(model.numberOfLines)
                 .font(model.font)
                 .foregroundColor(model.color)

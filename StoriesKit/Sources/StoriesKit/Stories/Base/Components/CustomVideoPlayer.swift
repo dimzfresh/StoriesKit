@@ -9,14 +9,8 @@ public class VideoPlayerStateManager: ObservableObject {
     public static let shared = VideoPlayerStateManager()
     
     @Published public private(set) var currentState: VideoPlayerState = .idle
-    
-    public let currentPlayer = AVPlayer()
 
     private init() {}
-    
-    public func setCurrentPlayerItem(_ playerItem: AVPlayerItem?) {
-        currentPlayer.replaceCurrentItem(with: playerItem)
-    }
     
     public func setState(_ state: VideoPlayerState) {
         DispatchQueue.main.async {
@@ -26,17 +20,14 @@ public class VideoPlayerStateManager: ObservableObject {
     
     public func setPlaying() {
         setState(.playing)
-        currentPlayer.play()
     }
     
     public func setPaused() {
         setState(.paused)
-        currentPlayer.pause()
     }
     
     public func setIdle() {
         setState(.idle)
-        currentPlayer.pause()
     }
 
     public enum VideoPlayerState {
@@ -84,11 +75,10 @@ public struct VideoPlayerRepresentable: UIViewControllerRepresentable {
         
         playerItem.preferredForwardBufferDuration = 0.5
         
-        let player = stateManager.currentPlayer
+        // Создаем новый AVPlayer для каждой страницы
+        let player = AVPlayer(playerItem: playerItem)
         player.isMuted = isMuted
         player.automaticallyWaitsToMinimizeStalling = false
-        
-        stateManager.setCurrentPlayerItem(playerItem)
         
         let playerLayer = AVPlayerLayer(player: player)
         playerLayer.videoGravity = .resizeAspectFill
@@ -168,5 +158,18 @@ public struct VideoPlayerView: View {
             playerBinding: $player
         )
         .transition(.opacity.animation(.easeInOut(duration: 0.1)))
+        .onReceive(stateManager.$currentState) { state in
+            switch state {
+            case .playing:
+                player?.play()
+            case .paused:
+                player?.pause()
+            case .idle:
+                player?.pause()
+            }
+        }
+        .onDisappear {
+            player?.pause()
+        }
     }
 }

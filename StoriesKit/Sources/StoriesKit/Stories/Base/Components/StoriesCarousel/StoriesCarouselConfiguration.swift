@@ -108,9 +108,9 @@ public struct StoriesCarouselConfiguration {
 
         public init(
             lineWidth: CGFloat = 3,
-            gap: CGFloat = 2,
+            gap: CGFloat = 3,
             viewedColor: Color = .gray.opacity(0.6),
-            unviewedColor: Color = .green
+            unviewedColor: Color = .green.opacity(0.8)
         ) {
             self.lineWidth = lineWidth
             self.gap = gap

@@ -16,20 +16,25 @@ public struct StoriesModel {
     public let avatar: StoriesModel.Avatar
 
     /// Text configuration for user names
-    public let userName: StoriesModel.UserName
+    public let userName: StoriesModel.Text
+
+    /// Text configuration for dates
+    public let date: StoriesModel.Text
 
     public init(
         groups: [StoriesGroupModel],
         backgroundColor: Color = .black,
         progress: StoriesModel.Progress = .default,
         avatar: StoriesModel.Avatar = .default,
-        userName: StoriesModel.UserName = .default
+        userName: StoriesModel.Text = .userName,
+        date: StoriesModel.Text = .date
     ) {
         self.groups = groups
         self.backgroundColor = backgroundColor
         self.progress = progress
         self.avatar = avatar
         self.userName = userName
+        self.date = date
     }
 
     public struct Avatar {
@@ -50,7 +55,7 @@ public struct StoriesModel {
         public static let `default` = Self()
     }
 
-    public struct UserName {
+    public struct Text {
         /// Font for user names
         public let font: Font
 
@@ -70,7 +75,7 @@ public struct StoriesModel {
             font: Font = .system(size: 12, weight: .bold),
             color: Color = .white,
             numberOfLines: Int = 1,
-            alignment: TextAlignment = .center,
+            alignment: TextAlignment = .leading,
             padding: EdgeInsets = EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 0)
         ) {
             self.font = font
@@ -80,7 +85,14 @@ public struct StoriesModel {
             self.padding = padding
         }
 
-        public static let `default` = Self()
+        public static let userName = Self()
+        public static let date = Self(
+            font: .system(size: 10, weight: .semibold),
+            color: .white.opacity(0.8),
+            numberOfLines: 1,
+            alignment: .leading,
+            padding: .init(top: 0, leading: 8, bottom: 0, trailing: 0)
+        )
     }
 
     public struct Progress {

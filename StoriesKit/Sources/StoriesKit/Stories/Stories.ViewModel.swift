@@ -61,6 +61,8 @@ extension Stories {
 
         deinit {
             timer?.stop()
+            // Останавливаем видео плеер при уничтожении ViewModel
+            VideoPlayerStateManager.shared.setIdle()
         }
 
         func send(_ event: ViewEvent) {
@@ -120,6 +122,8 @@ private extension Stories.ViewModel {
         case let .didSwitchGroup(direction):
             switchToGroup(direction)
         case .didDismiss:
+            // Останавливаем видео плеер при закрытии StoriesKit
+            VideoPlayerStateManager.shared.setIdle()
             stateManager.send(.didToggleGroup(nil))
         case .didPauseTimer:
             timer?.pause()
@@ -137,7 +141,12 @@ private extension Stories.ViewModel {
 
         timer?.start(duration: currentPage.duration)
 
-        VideoPlayerStateManager.shared.setPlaying()
+        // Запускаем видео только если текущая страница - видео
+        if isCurrentPageVideo() {
+            VideoPlayerStateManager.shared.setPlaying()
+        } else {
+            VideoPlayerStateManager.shared.setIdle()
+        }
 
         if let current = state.current, let pageId = getCurrentPage()?.id {
             stateManager.send(.didViewPage(
@@ -152,7 +161,12 @@ private extension Stories.ViewModel {
 
         timer?.resume(duration: currentPage.duration)
 
-        VideoPlayerStateManager.shared.setPlaying()
+        // Возобновляем видео только если текущая страница - видео
+        if isCurrentPageVideo() {
+            VideoPlayerStateManager.shared.setPlaying()
+        } else {
+            VideoPlayerStateManager.shared.setIdle()
+        }
     }
 
     private func updateProgress(_ progress: CGFloat) {
@@ -205,6 +219,9 @@ private extension Stories.ViewModel {
     func switchToGroup(_ direction: Stories.ViewEvent.GroupDirection) {
         guard let currentGroup = state.current?.selectedGroup,
               let currentIndex = state.groups.firstIndex(where: { $0.id == currentGroup.id }) else { return }
+        
+        // Останавливаем видео при переключении групп
+        VideoPlayerStateManager.shared.setIdle()
 
         var group: StoriesGroupModel?
 
@@ -310,6 +327,9 @@ private extension Stories.ViewModel {
     private func switchToPage(_ page: StoriesPageModel?) {
         guard let page, let current = state.current else { return }
         
+        // Останавливаем видео при переключении страниц
+        VideoPlayerStateManager.shared.setIdle()
+        
         let updatedGroup = state.groups.first(where: { $0.id == current.selectedGroup.id }) ?? current.selectedGroup
         let updatedActivePages = setActivePage(for: updatedGroup.id, page: page)
         updateState(
@@ -354,5 +374,16 @@ private extension Stories.ViewModel {
             ),
             isPaused: isPaused
         )
+    }
+    
+    private func isCurrentPageVideo() -> Bool {
+        guard let currentPage = getCurrentPage() else { return false }
+        
+        switch currentPage.mediaSource.media {
+        case .video:
+            return true
+        case .image:
+            return false
+        }
     }
 }

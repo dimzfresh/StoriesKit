@@ -4,8 +4,9 @@ import SwiftUI
 /// Model representing an individual story page
 public struct StoriesPageModel: Hashable {
     public let id: String
-    public let isViewed: Bool
+    public let date: String
     public let mediaSource: StoriesMediaModel
+    public let isViewed: Bool
     public let button: StoriesPageModel.Button?
     public let duration: TimeInterval
     public let corners: Corners
@@ -13,6 +14,7 @@ public struct StoriesPageModel: Hashable {
 
     public init(
         id: String = UUID().uuidString,
+        date: String,
         mediaSource: StoriesMediaModel,
         isViewed: Bool = false,
         button: StoriesPageModel.Button? = nil,
@@ -21,9 +23,10 @@ public struct StoriesPageModel: Hashable {
         content: AnyView? = nil
     ) {
         self.id = id
+        self.date = date
+        self.mediaSource = mediaSource
         self.isViewed = isViewed
         self.button = button
-        self.mediaSource = mediaSource
         self.duration = duration
         self.corners = corners
         self.content = content
@@ -32,6 +35,7 @@ public struct StoriesPageModel: Hashable {
     func updateViewed(_ isViewed: Bool) -> Self {
         .init(
             id: id,
+            date: date,
             mediaSource: mediaSource,
             isViewed: isViewed,
             button: button,
@@ -43,6 +47,7 @@ public struct StoriesPageModel: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(id)
         hasher.combine(isViewed)
+        hasher.combine(date)
         hasher.combine(mediaSource)
         hasher.combine(button)
         hasher.combine(duration)

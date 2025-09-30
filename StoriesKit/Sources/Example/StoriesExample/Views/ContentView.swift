@@ -14,16 +14,17 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            VStack(spacing: 12) {
+            VStack(spacing: 0) {
                 storiesCarouselView
 
                 randomImagesSection
 
                 Spacer()
             }
-            .background(Color(.systemBackground))
+            .padding(.top, 20)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Color(red: 0.08, green: 0.08, blue: 0.08))
+        .preferredColorScheme(.dark)
         .overlay {
             if stateManager.state.isShown {
                 Stories.build(
@@ -39,13 +40,13 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
                 Image(systemName: "music.mic")
-                    .foregroundColor(.blue)
+                    .foregroundColor(.white.opacity(0.8))
                     .font(.title3)
 
                 Text("Artist Stories")
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundColor(.primary)
+                    .foregroundColor(.white.opacity(0.9))
 
                 Spacer()
             }
@@ -57,20 +58,21 @@ struct ContentView: View {
             )
         }
         .padding(.vertical, 16)
-        .background(Color(.systemBackground))
+        .background(Color(red: 0.08, green: 0.08, blue: 0.08))
+        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
     }
 
     private var randomImagesSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 8) {
                 Image(systemName: "photo.on.rectangle.angled")
-                    .foregroundColor(.blue)
+                    .foregroundColor(.white.opacity(0.8))
                     .font(.title3)
 
                 Text("Featured Images")
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundColor(.primary)
+                    .foregroundColor(.white.opacity(0.9))
 
                 Spacer()
             }
@@ -93,6 +95,7 @@ struct ContentView: View {
                 }
             }
         }
-        .background(Color(.systemBackground))
+        .background(Color(red: 0.08, green: 0.08, blue: 0.08))
+        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
     }
 }
