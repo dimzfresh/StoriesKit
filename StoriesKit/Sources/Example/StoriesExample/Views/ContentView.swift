@@ -4,10 +4,10 @@ import StoriesKit
 
 struct ContentView: View {
     @StateObject private var stateManager = StoriesStateManager(
-        groups: StoriesDataModel().storiesGroups
+        groups: StoriesFactory.makeStoriesGroups()
     )
 
-    private let randomImages = StoriesDataModel().randomImages
+    private let randomImages = StoriesFactory.makeRandomImages()
 
     @Namespace private var avatarNamespace
 
@@ -17,6 +17,8 @@ struct ContentView: View {
                 storiesCarouselView
 
                 randomImagesSection
+
+                Spacer()
             }
             .background(Color(.systemBackground))
         }

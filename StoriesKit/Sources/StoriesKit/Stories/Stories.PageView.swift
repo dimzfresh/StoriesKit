@@ -195,12 +195,13 @@ extension Stories {
                 case let .remote(url):
                     KFImage(url)
                         .placeholder {
-                            Circle()
-                                .fill(.gray.opacity(0.3))
-                                .overlay(
-                                    Image(systemName: "person.fill")
-                                        .foregroundColor(.gray)
-                                )
+                            if let placeholder = group.placeholder {
+                                Image(uiImage: placeholder)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 32, height: 32)
+                                    .clipShape(Circle())
+                            }
                         }
                         .cacheOriginalImage()
                         .diskCacheExpiration(.seconds(600))
@@ -224,9 +225,9 @@ extension Stories {
                 onButtonAction(.close)
             } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 18, weight: .medium))
+                    .resizable()
                     .foregroundColor(.white)
-                    .frame(width: 32, height: 32)
+                    .frame(width: 16, height: 16)
             }
             .onTapGesture {}
         }

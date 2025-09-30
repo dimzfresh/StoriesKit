@@ -3,20 +3,12 @@ import SwiftUI
 import StoriesKit
 import AVFoundation
 
-final class StoriesDataModel: ObservableObject {
-    @Published var storiesGroups: [StoriesGroupModel] = []
-    @Published var randomImages: [String] = []
-    
-    init() {
-        generateStoriesData()
-        generateRandomImages()
-    }
-    
-    private func generateStoriesData() {
+enum StoriesFactory {
+    static func makeStoriesGroups() -> [StoriesGroupModel] {
         let storiesGroups = [
             StoriesGroupModel(
                 id: "taylor_swift",
-                title: "Taylor Swift",
+                title: createAttributedTitle("Taylor Swift"),
                 avatarImage: .remote(URL(string: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=100&h=100&fit=crop&crop=face")!),
                 pages: [
                     createStoryPage(
@@ -44,7 +36,7 @@ final class StoriesDataModel: ObservableObject {
             ),
             StoriesGroupModel(
                 id: "bad_bunny",
-                title: "Bad Bunny",
+                title: createAttributedTitle("Bad Bunny"),
                 avatarImage: .remote(URL(string: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100&h=100&fit=crop&crop=face")!),
                 pages: [
                     createStoryPage(
@@ -58,7 +50,7 @@ final class StoriesDataModel: ObservableObject {
             ),
             StoriesGroupModel(
                 id: "the_weeknd",
-                title: "The Weeknd",
+                title: createAttributedTitle("The Weeknd"),
                 avatarImage: .remote(URL(string: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100&h=100&fit=crop&crop=face")!),
                 pages: [
                     createStoryPage(
@@ -71,7 +63,7 @@ final class StoriesDataModel: ObservableObject {
             ),
             StoriesGroupModel(
                 id: "drake",
-                title: "Drake",
+                title: createAttributedTitle("Drake"),
                 avatarImage: .remote(URL(string: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=100&h=100&fit=crop&crop=face")!),
                 pages: [
                     createStoryPage(
@@ -92,7 +84,7 @@ final class StoriesDataModel: ObservableObject {
             ),
             StoriesGroupModel(
                 id: "ariana_grande",
-                title: "Ariana Grande",
+                title: createAttributedTitle("Ariana Grande"),
                 avatarImage: .remote(URL(string: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=100&h=100&fit=crop&crop=face")!),
                 pages: [
                     createStoryPage(
@@ -105,7 +97,7 @@ final class StoriesDataModel: ObservableObject {
             ),
             StoriesGroupModel(
                 id: "billie_eilish",
-                title: "Billie Eilish",
+                title: createAttributedTitle("Billie Eilish"),
                 avatarImage: .remote(URL(string: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=100&h=100&fit=crop&crop=face")!),
                 pages: [
                     createStoryPage(
@@ -129,10 +121,14 @@ final class StoriesDataModel: ObservableObject {
         let firstGroups = storiesGroups.filter { $0.pages.contains(where: { !$0.isViewed }) }.sorted { $0.id < $1.id }
         let viewedGroups = storiesGroups.filter { $0.pages.allSatisfy(\.isViewed) }.sorted { $0.id < $1.id }
 
-        self.storiesGroups = firstGroups + viewedGroups
+        return firstGroups + viewedGroups
     }
     
-    func generateRandomImages() {
+    private static func createAttributedTitle(_ text: String) -> String {
+        return text
+    }
+    
+    static func makeRandomImages() -> [String] {
         let imageUrls = [
             "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=600&fit=crop&crop=center&auto=format&q=80",
             "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&h=600&fit=crop&crop=center&auto=format&q=80",
@@ -141,49 +137,10 @@ final class StoriesDataModel: ObservableObject {
             "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=600&fit=crop&crop=center&auto=format&q=80"
         ]
         
-        randomImages = imageUrls.shuffled()
-    }
-    
-    // MARK: - Page Viewing Logic
-    
-    func markPageAsViewed(groupId: String, pageId: String) {
-        updatePageViewedStatus(groupId: groupId, pageId: pageId, isViewed: true)
+        return imageUrls.shuffled()
     }
 
-    private func updatePageViewedStatus(groupId: String, pageId: String, isViewed: Bool) {
-        if let groupIndex = storiesGroups.firstIndex(where: { $0.id == groupId }),
-           let pageIndex = storiesGroups[groupIndex].pages.firstIndex(where: { $0.id == pageId }) {
-            
-            let currentPage = storiesGroups[groupIndex].pages[pageIndex]
-            let updatedPage = StoriesPageModel(
-                id: currentPage.id,
-                title: currentPage.title,
-                subtitle: currentPage.subtitle,
-                backgroundColor: currentPage.backgroundColor,
-                mediaSource: currentPage.mediaSource,
-                isViewed: isViewed,
-                button: currentPage.button,
-                duration: currentPage.duration
-            )
-            
-            var updatedPages = storiesGroups[groupIndex].pages
-            updatedPages[pageIndex] = updatedPage
-            
-            storiesGroups[groupIndex] = StoriesGroupModel(
-                id: storiesGroups[groupIndex].id,
-                title: storiesGroups[groupIndex].title,
-                avatarImage: storiesGroups[groupIndex].avatarImage,
-                pages: updatedPages
-            )
-        }
-
-        let firstGroups = storiesGroups.filter { $0.pages.contains(where: { !$0.isViewed }) }.sorted { $0.id < $1.id }
-        let viewedGroups = storiesGroups.filter { $0.pages.allSatisfy(\.isViewed) }.sorted { $0.id < $1.id }
-
-        self.storiesGroups = firstGroups + viewedGroups
-    }
-
-    private func createStoryPage(
+    private static func createStoryPage(
         title: String,
         subtitle: String,
         backgroundColor: UIColor,
