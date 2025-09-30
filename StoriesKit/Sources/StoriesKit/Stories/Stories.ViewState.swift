@@ -32,5 +32,14 @@ extension Stories {
             let selectedGroup: StoriesGroupModel
             let activePages: [String: StoriesPageModel]
         }
+
+        static let `default` = Self(
+            groups: [],
+            progressBar: .init(
+                progress: 0,
+                duration: 5
+            ),
+            current: nil
+        )
     }
 }

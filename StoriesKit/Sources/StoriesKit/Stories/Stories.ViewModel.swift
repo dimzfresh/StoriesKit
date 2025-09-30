@@ -8,10 +8,7 @@ protocol IStoriesViewModel: ObservableObject {
 
     func send(_ event: Stories.ViewEvent)
 
-    init(
-        groups: [StoriesGroupModel],
-        stateManager: StoriesStateManager
-    )
+    init(stateManager: StoriesStateManager)
 }
 
 extension Stories {
@@ -25,12 +22,10 @@ extension Stories {
 
         private var timer: CountDownTimer?
 
-        init(
-            groups: [StoriesGroupModel],
-            stateManager: StoriesStateManager
-        ) {
+        init(stateManager: StoriesStateManager) {
+            let groups = stateManager.state.groups
             let initialGroupIndex = groups.firstIndex(where: { $0.id == stateManager.state.selectedGroupId }) ?? 0
-            let initialGroup = groups[initialGroupIndex]
+            let initialGroup = groups.indices.contains(initialGroupIndex) ? groups[initialGroupIndex] : groups.first!
             let initialPage = initialGroup.pages.first { !$0.isViewed } ?? initialGroup.pages.first
 
             let activePages = Dictionary(uniqueKeysWithValues: groups.map { group in
@@ -82,6 +77,36 @@ private extension Stories.ViewModel {
             handleEvent(event)
         }
         .store(in: &subscriptions)
+
+        stateManager.$state.sink { [weak self] managerState in
+            guard let self else { return }
+
+            var newGroups = managerState.groups
+
+            guard let current = state.current else { return }
+
+            let updatedSelectedGroup = newGroups.first(where: { $0.id == current.selectedGroup.id }) ?? current.selectedGroup
+
+            var updatedActivePages: [String: StoriesPageModel] = [:]
+            for (groupId, activePage) in current.activePages {
+                if let group = newGroups.first(where: { $0.id == groupId }),
+                   let matched = group.pages.first(where: { $0.id == activePage.id }) {
+                    updatedActivePages[groupId] = matched
+                } else {
+                    updatedActivePages[groupId] = activePage
+                }
+            }
+
+            updateState(
+                groups: newGroups,
+                progress: state.progressBar.progress,
+                duration: getCurrentPage()?.duration ?? state.progressBar.duration,
+                selectedGroup: updatedSelectedGroup,
+                activePages: updatedActivePages,
+                isPaused: state.isPaused
+            )
+        }
+        .store(in: &subscriptions)
     }
 
     func handleEvent(_ event: Stories.ViewEvent) {
@@ -129,13 +154,12 @@ private extension Stories.ViewModel {
     private func updateProgress(_ progress: CGFloat) {
         guard let current = state.current else { return }
 
-        state = .init(
+        updateState(
             groups: state.groups,
-            progressBar: .init(
-                progress: progress,
-                duration: getCurrentPage()?.duration ?? 5
-            ),
-            current: current,
+            progress: progress,
+            duration: getCurrentPage()?.duration ?? 5,
+            selectedGroup: current.selectedGroup,
+            activePages: current.activePages,
             isPaused: false
         )
     }
@@ -190,8 +214,8 @@ private extension Stories.ViewModel {
         let lastActiveForGroup = state.current?.activePages[group.id]
         let startPage: StoriesPageModel?
         
-        if let lastActive = lastActiveForGroup,
-           let lastActiveIndex = updatedGroup.pages.firstIndex(where: { $0.id == lastActive.id }) {
+        if let lastActiveForGroup,
+           let lastActiveIndex = updatedGroup.pages.firstIndex(where: { $0.id == lastActiveForGroup.id }) {
             startPage = updatedGroup.pages[lastActiveIndex]
         } else {
             startPage = updatedGroup.pages.first { !$0.isViewed } ?? updatedGroup.pages.first
@@ -257,7 +281,9 @@ private extension Stories.ViewModel {
         let currentPageIndex = current.selectedGroup.pages.firstIndex(where: { $0.id == getCurrentPage()?.id }) ?? 0
         let nextPageIndex = currentPageIndex + 1
 
-        updatePagesViewedState(pageIndex: currentPageIndex)
+        if let groupId = state.current?.selectedGroup.id, let pageId = getCurrentPage()?.id {
+            stateManager.send(.didViewPage(groupId, pageId))
+        }
 
         let nextPage = state.groups.first(where: { $0.id == current.selectedGroup.id })?.pages[nextPageIndex]
         switchToPage(nextPage)
@@ -273,35 +299,7 @@ private extension Stories.ViewModel {
         switchToPage(prevPage)
     }
     
-    private func updatePagesViewedState(pageIndex: Int) {
-        var groups = state.groups
-        guard let groupIndex = groups.firstIndex(where: { $0.id == state.current?.selectedGroup.id }) else { return }
-
-        let group = groups[groupIndex]
-        var pages = groups[groupIndex].pages
-
-        for index in 0...pageIndex {
-            pages[index] = pages[index].updateViewed(true)
-        }
-
-        groups[groupIndex] = .init(
-            id: group.id,
-            title: group.title,
-            avatarImage: group.avatarImage,
-            pages: pages
-        )
-        
-        let currentActivePage = getCurrentPage()
-        let updatedActivePages = setActivePage(for: state.current?.selectedGroup.id ?? "", page: currentActivePage)
-        updateState(
-            groups: groups,
-            progress: state.progressBar.progress,
-            duration: state.progressBar.duration,
-            selectedGroup: state.current?.selectedGroup ?? state.groups.first!,
-            activePages: updatedActivePages,
-            isPaused: state.isPaused
-        )
-    }
+    
     
     private func switchToPage(_ page: StoriesPageModel?) {
         guard let page, let current = state.current else { return }

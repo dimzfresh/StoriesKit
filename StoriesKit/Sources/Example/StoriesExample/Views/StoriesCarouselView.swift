@@ -3,7 +3,6 @@ import SwiftUI
 import StoriesKit
 
 struct StoriesCarouselView: View {
-    @ObservedObject var storiesVM: StoriesViewModel
     @ObservedObject var stateManager: StoriesStateManager
     let avatarNamespace: Namespace.ID
 
@@ -12,15 +11,20 @@ struct StoriesCarouselView: View {
     private let avatarSize: CGFloat = 70
     private let titleHeight: CGFloat = 20
 
+    private var groups: [StoriesGroupModel] {
+        let firstGroups = stateManager.state.groups.filter { $0.pages.contains(where: { !$0.isViewed }) }.sorted { $0.id < $1.id }
+        let viewedGroups = stateManager.state.groups.filter { $0.pages.allSatisfy(\.isViewed) }.sorted { $0.id < $1.id }
+        return firstGroups + viewedGroups
+    }
+
     var body: some View {
         ZStack {
             ScrollViewReader { proxy in
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 16) {
-                        ForEach(storiesVM.dataModel.storiesGroups) { group in
+                        ForEach(groups) { group in
                             StoryGroupItemView(
                                 group: group,
-                                storiesVM: storiesVM,
                                 stateManager: stateManager,
                                 avatarNamespace: avatarNamespace,
                                 avatarSize: avatarSize,
@@ -48,7 +52,6 @@ struct StoriesCarouselView: View {
 
 struct StoryGroupItemView: View {
     let group: StoriesGroupModel
-    @ObservedObject var storiesVM: StoriesViewModel
     @ObservedObject var stateManager: StoriesStateManager
     let avatarNamespace: Namespace.ID
     let avatarSize: CGFloat

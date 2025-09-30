@@ -2,13 +2,12 @@ import Kingfisher
 import SwiftUI
 import StoriesKit
 
-final class StoriesViewModel: ObservableObject {
-    @Published var dataModel = StoriesDataModel()
-}
-
 struct ContentView: View {
-    @StateObject private var storiesVM = StoriesViewModel()
-    @StateObject private var stateManager = StoriesStateManager()
+    @StateObject private var stateManager = StoriesStateManager(
+        groups: StoriesDataModel().storiesGroups
+    )
+
+    private let randomImages = StoriesDataModel().randomImages
 
     @Namespace private var avatarNamespace
 
@@ -25,16 +24,10 @@ struct ContentView: View {
         .overlay {
             if stateManager.state.isShown {
                 Stories.build(
-                    groups: storiesVM.dataModel.storiesGroups,
                     stateManager: stateManager,
                     avatarNamespace: avatarNamespace
                 )
                 .ignoresSafeArea()
-            }
-        }
-        .onChange(of: stateManager.state.event) { event in
-            if case let .didViewPage(groupId, pageId) = event {
-                storiesVM.dataModel.markPageAsViewed(groupId: groupId, pageId: pageId)
             }
         }
     }
@@ -56,7 +49,6 @@ struct ContentView: View {
             .padding(.horizontal, 16)
 
             StoriesCarouselView(
-                storiesVM: storiesVM,
                 stateManager: stateManager,
                 avatarNamespace: avatarNamespace
             )
@@ -64,7 +56,7 @@ struct ContentView: View {
         .padding(.vertical, 16)
         .background(Color(.systemBackground))
     }
-    
+
     private var randomImagesSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 8) {
@@ -82,12 +74,12 @@ struct ContentView: View {
             .padding(.horizontal, 16)
 
             ScrollView(.vertical, showsIndicators: false) {
-                ForEach(storiesVM.dataModel.randomImages.prefix(5).indices, id: \.self) { index in
+                ForEach(randomImages.prefix(5).indices, id: \.self) { index in
                     RoundedRectangle(cornerRadius: 12)
                         .fill(.clear)
                         .frame(width: UIScreen.main.bounds.width - 32, height: 200)
                         .overlay {
-                            KFImage(URL(string: storiesVM.dataModel.randomImages[index]))
+                            KFImage(URL(string: randomImages[index]))
                                 .resizable()
                                 .scaledToFill()
                                 .frame(width: UIScreen.main.bounds.width - 32, height: 200)

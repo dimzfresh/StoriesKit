@@ -15,10 +15,7 @@ public enum Stories {
         avatarNamespace: Namespace.ID
     ) -> UIViewController {
         ViewController(
-            viewModel: ViewModel(
-                groups: groups,
-                stateManager: stateManager
-            ),
+            viewModel: ViewModel(stateManager: stateManager),
             avatarNamespace: avatarNamespace
         )
     }
@@ -30,15 +27,11 @@ public enum Stories {
     ///   - avatarNamespace: Namespace for matched geometry effect
     /// - Returns: Pure SwiftUI View for embedding in SwiftUI hierarchy
     public static func build(
-        groups: [StoriesGroupModel],
         stateManager: StoriesStateManager,
         avatarNamespace: Namespace.ID
     ) -> some SwiftUI.View {
         Stories.View(
-            viewModel: ViewModel(
-                groups: groups,
-                stateManager: stateManager
-            ),
+            viewModel: ViewModel(stateManager: stateManager),
             avatarNamespace: avatarNamespace
         )
     }
