@@ -251,7 +251,9 @@ extension Stories {
         private func handleScrollViewAppear(proxy: ScrollViewProxy) {
             guard let current = viewModel.state.current else { return }
 
-            proxy.scrollTo(current.selectedGroup.id, anchor: .center)
+            Task {
+                proxy.scrollTo(current.selectedGroup.id, anchor: .center)
+            }
         }
 
         private func handleCurrentChange(

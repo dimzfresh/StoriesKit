@@ -37,7 +37,7 @@ struct StoriesCarouselView: View {
                 .onChange(of: stateManager.state.selectedGroupId) { groupId in
                     guard let groupId else { return }
 
-                    withAnimation(.easeInOut(duration: 0.2)) {
+                    Task {
                         proxy.scrollTo(groupId, anchor: .center)
                     }
                 }

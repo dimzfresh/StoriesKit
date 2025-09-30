@@ -21,10 +21,6 @@ public struct SegmentedCircleView: View {
 
     public var body: some View {
         ZStack {
-            Circle()
-                .stroke(.gray.opacity(0.2), lineWidth: lineWidth)
-                .frame(width: size, height: size)
-
             ForEach(Array(segments.enumerated()), id: \.offset) { index, segment in
                 SegmentView(
                     index: index,
@@ -53,7 +49,7 @@ public extension SegmentedCircleView {
         }
 
         public static var active: Self { .init(color: .green, isActive: true) }
-        public static var viewed: Self { .init(color: .gray.opacity(0.6), isActive: false) }
+        public static var viewed: Self { .init(color: .black.opacity(0.35), isActive: false) }
         public static var upcoming: Self { .init(color: .green, isActive: true) }
         public static var error: Self { .init(color: .red, isActive: false) }
     }
@@ -89,7 +85,7 @@ private struct SegmentView: View {
                 segment.color,
                 style: StrokeStyle(
                     lineWidth: lineWidth,
-                    lineCap: .round,
+                    lineCap: .square,
                     lineJoin: .round
                 )
             )
@@ -123,16 +119,22 @@ public extension SegmentedCircleView {
     static func createProgressSegments(
         progress: Double,
         totalSegments: Int,
-        activeColor: Color = .blue,
+        activeColor: Color = .green,
         inactiveColor: Color = .gray.opacity(0.3)
     ) -> [Segment] {
         let activeSegments = Int(progress * Double(totalSegments))
 
         return (0..<totalSegments).map { index in
             if index < activeSegments {
-                return Segment(color: activeColor, isActive: true)
+                .init(
+                    color: activeColor,
+                    isActive: true
+                )
             } else {
-                return Segment(color: inactiveColor, isActive: false)
+                .init(
+                    color: inactiveColor,
+                    isActive: false
+                )
             }
         }
     }
@@ -140,6 +142,9 @@ public extension SegmentedCircleView {
 
 extension SegmentedCircleView.Segment {
     public static func custom(_ color: Color, isActive: Bool = true) -> Self {
-        Self(color: color, isActive: isActive)
+        Self(
+            color: color,
+            isActive: isActive
+        )
     }
 }

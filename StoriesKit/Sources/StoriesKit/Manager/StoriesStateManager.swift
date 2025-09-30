@@ -12,6 +12,8 @@ public final class StoriesStateManager: ObservableObject {
     public func send(_ event: Event) {
         switch event {
         case let .didToggleGroup(groupId):
+            state.event = event
+
             if let groupId {
                 withAnimation(.easeInOut(duration: 0.25)) {
                     state.selectedGroupId = groupId
@@ -21,15 +23,14 @@ public final class StoriesStateManager: ObservableObject {
                     self.state.selectedGroupId = nil
                 }
             }
-
-            state.event = event
         case let .didSwitchGroup(groupId):
-            state.selectedGroupId = groupId
             state.event = event
+            state.selectedGroupId = groupId
         case let .didOpenLink(url):
             state.event = event
         case let .didViewPage(groupId, pageId):
             state.event = event
+            state.selectedGroupId = groupId
         }
     }
 
