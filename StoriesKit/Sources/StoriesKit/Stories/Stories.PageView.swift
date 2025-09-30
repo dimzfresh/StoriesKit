@@ -169,38 +169,35 @@ extension Stories {
 
                 Spacer()
 
-                closeButton()
+                Button {
+                    onButtonAction(.close)
+                } label: {
+                    Image(systemName: "xmark")
+                        .resizable()
+                        .foregroundColor(.white)
+                        .scaledToFill()
+                        .frame(width: 16, height: 16)
+                        .contentShape(Rectangle())
+                }
+                .onTapGesture {}
             }
         }
 
         private func avatarView(_ model: StoriesModel.Avatar) -> some SwiftUI.View {
-            Group {
-                switch group.avatarImage {
-                case let .local(image):
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: model.size, height: model.size)
-                        .clipShape(Circle())
-                case let .remote(url):
-                    KFImage(url)
-                        .placeholder {
-                            if let placeholder = group.placeholder {
-                                Image(uiImage: placeholder)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: model.size, height: model.size)
-                                    .clipShape(Circle())
-                            }
-                        }
-                        .cacheOriginalImage()
-                        .diskCacheExpiration(.seconds(600))
-                        .resizable()
-                        .frame(width: model.size, height: model.size)
-                        .clipShape(Circle())
-                        .scaledToFill()
+            StoriesMediaView(
+                mediaModel: .init(media: .image(group.avatarImage)),
+                placeholder: {
+                    if let placeholder = group.placeholder {
+                        Image(uiImage: placeholder)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: model.size, height: model.size)
+                            .clipShape(Circle())
+                    }
                 }
-            }
+            )
+            .frame(width: model.size, height: model.size)
+            .clipShape(Circle())
             .padding(model.padding)
         }
 
@@ -211,18 +208,6 @@ extension Stories {
                 .foregroundColor(model.color)
                 .multilineTextAlignment(model.alignment)
                 .padding(model.padding)
-        }
-
-        private func closeButton() -> some SwiftUI.View {
-            Button {
-                onButtonAction(.close)
-            } label: {
-                Image(systemName: "xmark")
-                    .resizable()
-                    .foregroundColor(.white)
-                    .frame(width: 16, height: 16)
-            }
-            .onTapGesture {}
         }
 
         private func buttonView(for button: StoriesPageModel.Button) -> some SwiftUI.View {

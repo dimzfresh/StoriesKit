@@ -33,10 +33,8 @@ public struct SegmentedCircleView: View {
             }
         }
     }
-}
 
-public extension SegmentedCircleView {
-    struct Segment: Hashable {
+    public struct Segment: Hashable {
         public let color: Color
         public let isActive: Bool
 
@@ -51,7 +49,6 @@ public extension SegmentedCircleView {
         public static var active: Self { .init(color: .green, isActive: true) }
         public static var viewed: Self { .init(color: .black.opacity(0.35), isActive: false) }
         public static var upcoming: Self { .init(color: .green, isActive: true) }
-        public static var error: Self { .init(color: .red, isActive: false) }
     }
 }
 
@@ -90,33 +87,28 @@ private struct SegmentView: View {
                 )
             )
             .frame(width: size, height: size)
-            .shadow(
-                color: segment.isActive ? segment.color.opacity(0.3) : .clear,
-                radius: 2,
-                x: 0,
-                y: 1
-            )
     }
 }
 
 // MARK: - Factory Methods
-public extension SegmentedCircleView {
-    /// Creates segments for a story group with beautiful visual states
-    static func createSegments(for group: StoriesGroupModel) -> [Segment] {
-        guard !group.pages.allSatisfy(\.isViewed) else { return [.viewed] }
 
-        return (0..<group.pages.count).map { index in
-            if index < group.pages.count {
-                let page = group.pages[index]
-                return page.isViewed ? .viewed : .active
-            } else {
-                return .upcoming
+public extension SegmentedCircleView {
+    static func createDefaultSegments(for group: StoriesGroupModel) -> [Segment] {
+        if group.pages.allSatisfy(\.isViewed) {
+            [.viewed]
+        } else {
+            (0..<group.pages.count).map { index in
+                if index < group.pages.count {
+                    let page = group.pages[index]
+                    return page.isViewed ? .viewed : .active
+                } else {
+                    return .upcoming
+                }
             }
         }
     }
 
-    /// Creates progress-based segments
-    static func createProgressSegments(
+    static func createCustomSegments(
         progress: Double,
         totalSegments: Int,
         activeColor: Color = .green,
@@ -137,14 +129,5 @@ public extension SegmentedCircleView {
                 )
             }
         }
-    }
-}
-
-extension SegmentedCircleView.Segment {
-    public static func custom(_ color: Color, isActive: Bool = true) -> Self {
-        Self(
-            color: color,
-            isActive: isActive
-        )
     }
 }

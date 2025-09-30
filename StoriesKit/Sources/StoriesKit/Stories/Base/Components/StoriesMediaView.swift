@@ -18,7 +18,16 @@ public struct StoriesMediaView<Placeholder, Failure>: View where Placeholder: Vi
         self.placeholder = placeholder
         self.failure = failure
     }
-    
+
+    public init(
+        mediaModel: StoriesMediaModel,
+        @ViewBuilder placeholder: @escaping () -> Placeholder
+    ) where Failure == EmptyView {
+        self.mediaModel = mediaModel
+        self.placeholder = placeholder
+        self.failure = { EmptyView() }
+    }
+
     public var body: some View {
         Group {
             switch mediaModel.media {

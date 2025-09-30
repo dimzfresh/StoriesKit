@@ -75,7 +75,7 @@ public struct StoriesCarouselConfiguration {
             numberOfLines: Int = 1,
             lineSpacing: CGFloat = 0,
             truncationMode: Text.TruncationMode = .tail,
-            padding: EdgeInsets = EdgeInsets(top: 8, leading: 0, bottom: 0, trailing: 0),
+            padding: EdgeInsets = EdgeInsets(top: 12, leading: 0, bottom: 0, trailing: 0),
             multilineTextAlignment: TextAlignment = .center,
             font: Font = .system(size: 12, weight: .bold),
             color: Color = .primary

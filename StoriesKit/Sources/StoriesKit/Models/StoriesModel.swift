@@ -100,7 +100,7 @@ public struct StoriesModel {
         public let unviewedColor: Color
 
         public init(
-            lineSize: CGFloat = 2.5,
+            lineSize: CGFloat = 2,
             interItemSpacing: CGFloat = 4,
             containerPadding: EdgeInsets = EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0),
             viewedColor: Color = .gray.opacity(0.6),
