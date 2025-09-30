@@ -12,7 +12,7 @@ struct ContentView: View {
             groups: StoriesFactory.makeStoriesGroups(),
             backgroundColor: .black,
             progress: .init(
-                lineWidth: 3,
+                lineSize: 3,
                 gap: 2,
                 viewedColor: .gray.opacity(0.6),
                 unviewedColor: .green
@@ -21,7 +21,7 @@ struct ContentView: View {
                 size: 70,
                 padding: EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
             ),
-            text: .init(
+            userName: .init(
                 font: .system(size: 12, weight: .bold),
                 color: .white,
                 numberOfLines: 1,

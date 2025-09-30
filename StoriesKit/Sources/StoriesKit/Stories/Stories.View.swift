@@ -26,7 +26,7 @@ extension Stories {
 
         var body: some SwiftUI.View {
             ZStack {
-                viewModel.state.backgroundColor
+                viewModel.stateManager.model.backgroundColor
                     .opacity(getBackgroundOpacity())
                     .ignoresSafeArea()
 

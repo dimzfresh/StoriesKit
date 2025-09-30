@@ -77,15 +77,16 @@ extension Stories {
         }
 
         private func progressBarsView() -> some SwiftUI.View {
-            HStack(spacing: 4) {
+            HStack(spacing: stateManager.model.progress.interItemSpacing) {
                 ForEach(progressBars, id: \.self) { data in
                     ProgressBarView(
                         progress: data.progress,
-                        duration: data.duration
+                        duration: data.duration,
+                        height: stateManager.model.progress.lineSize
                     )
                 }
             }
-            .frame(height: 10)
+            .padding(stateManager.model.progress.containerPadding)
         }
 
         private func getAngle(geometry: GeometryProxy) -> Angle {
@@ -162,10 +163,9 @@ extension Stories {
 
         private func headerView() -> some SwiftUI.View {
             HStack(spacing: 0) {
-                HStack(spacing: 12) {
-                    avatarView()
-                    usernameView()
-                }
+                avatarView(stateManager.model.avatar)
+
+                usernameView(stateManager.model.userName)
 
                 Spacer()
 
@@ -173,14 +173,14 @@ extension Stories {
             }
         }
 
-        private func avatarView() -> some SwiftUI.View {
+        private func avatarView(_ model: StoriesModel.Avatar) -> some SwiftUI.View {
             Group {
                 switch group.avatarImage {
                 case let .local(image):
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 32, height: 32)
+                        .frame(width: model.size, height: model.size)
                         .clipShape(Circle())
                 case let .remote(url):
                     KFImage(url)
@@ -189,25 +189,28 @@ extension Stories {
                                 Image(uiImage: placeholder)
                                     .resizable()
                                     .scaledToFill()
-                                    .frame(width: 32, height: 32)
+                                    .frame(width: model.size, height: model.size)
                                     .clipShape(Circle())
                             }
                         }
                         .cacheOriginalImage()
                         .diskCacheExpiration(.seconds(600))
                         .resizable()
-                        .frame(width: 32, height: 32)
+                        .frame(width: model.size, height: model.size)
                         .clipShape(Circle())
                         .scaledToFill()
                 }
             }
+            .padding(model.padding)
         }
 
-        private func usernameView() -> some SwiftUI.View {
+        private func usernameView(_ model: StoriesModel.UserName) -> some SwiftUI.View {
             Text(group.title)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.white)
-                .lineLimit(1)
+                .lineLimit(model.numberOfLines)
+                .font(model.font)
+                .foregroundColor(model.color)
+                .multilineTextAlignment(model.alignment)
+                .padding(model.padding)
         }
 
         private func closeButton() -> some SwiftUI.View {
@@ -229,7 +232,7 @@ extension Stories {
                 Text(button.title)
                     .frame(width: 148, height: 50)
             }
-            .background(Color(button.backgroundColor))
+            .background(button.backgroundColor)
             .clipShape(RoundedRectangle(cornerRadius: getAdaptiveCornerRadius(button.corners)))
             .padding(.bottom, safeAreaInsets.bottom + 24)
             .onTapGesture {}

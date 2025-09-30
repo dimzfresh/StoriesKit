@@ -61,13 +61,13 @@ public struct StoriesPageModel: Hashable {
     /// Button configuration for story pages
     public struct Button: Hashable {
         public let title: AttributedString
-        public let backgroundColor: UIColor
+        public let backgroundColor: Color
         public let corners: Corners
         public let actionType: ActionType
 
         public init(
             title: AttributedString,
-            backgroundColor: UIColor,
+            backgroundColor: Color,
             corners: Corners,
             actionType: ActionType
         ) {

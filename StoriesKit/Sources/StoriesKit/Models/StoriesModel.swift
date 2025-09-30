@@ -16,20 +16,20 @@ public struct StoriesModel {
     public let avatar: StoriesModel.Avatar
 
     /// Text configuration for user names
-    public let text: StoriesModel.Text
+    public let userName: StoriesModel.UserName
 
     public init(
         groups: [StoriesGroupModel],
         backgroundColor: Color = .black,
         progress: StoriesModel.Progress = .default,
         avatar: StoriesModel.Avatar = .default,
-        text: StoriesModel.Text = .default
+        userName: StoriesModel.UserName = .default
     ) {
         self.groups = groups
         self.backgroundColor = backgroundColor
         self.progress = progress
         self.avatar = avatar
-        self.text = text
+        self.userName = userName
     }
 
     public struct Avatar {
@@ -50,7 +50,7 @@ public struct StoriesModel {
         public static let `default` = Self()
     }
 
-    public struct Text {
+    public struct UserName {
         /// Font for user names
         public let font: Font
 
@@ -84,11 +84,17 @@ public struct StoriesModel {
     }
 
     public struct Progress {
-        /// Line width for progress indicators
-        public let lineWidth: CGFloat
+        /// Thickness/height of progress segments
+        public let lineSize: CGFloat
 
         /// Gap between progress segments
         public let gap: CGFloat
+
+        /// Spacing between multiple progress bars (if any)
+        public let interItemSpacing: CGFloat
+
+        /// Padding of the progress container
+        public let containerPadding: EdgeInsets
 
         /// Color for viewed segments
         public let viewedColor: Color
@@ -97,13 +103,17 @@ public struct StoriesModel {
         public let unviewedColor: Color
 
         public init(
-            lineWidth: CGFloat = 3,
+            lineSize: CGFloat = 3,
             gap: CGFloat = 2,
+            interItemSpacing: CGFloat = 4,
+            containerPadding: EdgeInsets = EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0),
             viewedColor: Color = .gray.opacity(0.6),
             unviewedColor: Color = .green
         ) {
-            self.lineWidth = lineWidth
+            self.lineSize = lineSize
             self.gap = gap
+            self.interItemSpacing = interItemSpacing
+            self.containerPadding = containerPadding
             self.viewedColor = viewedColor
             self.unviewedColor = unviewedColor
         }
