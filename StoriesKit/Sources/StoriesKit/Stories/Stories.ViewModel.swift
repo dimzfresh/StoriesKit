@@ -137,6 +137,8 @@ private extension Stories.ViewModel {
 
         timer?.start(duration: currentPage.duration)
 
+        VideoPlayerStateManager.shared.setPlaying()
+
         if let current = state.current, let pageId = getCurrentPage()?.id {
             stateManager.send(.didViewPage(
                 current.selectedGroup.id,
@@ -149,6 +151,8 @@ private extension Stories.ViewModel {
         guard let currentPage = getCurrentPage() else { return }
 
         timer?.resume(duration: currentPage.duration)
+
+        VideoPlayerStateManager.shared.setPlaying()
     }
 
     private func updateProgress(_ progress: CGFloat) {
@@ -191,6 +195,8 @@ private extension Stories.ViewModel {
     func handleLongPress(_ pressing: Bool) {
         if pressing {
             timer?.pause()
+
+            VideoPlayerStateManager.shared.setPaused()
         } else {
             resumeCurrentPageTimer()
         }

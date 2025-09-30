@@ -8,17 +8,26 @@
 
 **StoriesKit** is a modern Swift library for creating beautiful Instagram-style stories with support for both UIKit and SwiftUI. The library provides ready-to-use components for displaying stories with navigation, timers, and interactive elements.
 
+> ⭐ **Like this project?** Give it a star on GitHub! Your support helps us continue development and add new features.  
+> 🚀 **Want to see more?** Follow us for updates and new releases!
+
+[![GitHub stars](https://img.shields.io/github/stars/dimzfresh/StoriesKit?style=social)](https://github.com/dimzfresh/StoriesKit)
+[![GitHub forks](https://img.shields.io/github/forks/dimzfresh/StoriesKit?style=social)](https://github.com/dimzfresh/StoriesKit)
+
 ## ✨ Features
 
 - 🎨 **Beautiful Design** — Modern UI in the style of popular social networks
 - ⚡ **High Performance** — Optimized architecture using SwiftUI and Combine
-- 🖼️ **Image Support** — URL image loading with caching (Kingfisher)
-- ⏱️ **Automatic Timers** — Configurable story duration
+- 🖼️ **Media Support** — Images and videos with smooth playback
+- 🎥 **Video Playback** — Advanced video player with preloading and state management
+- ⏱️ **Smart Timers** — Configurable story duration with video synchronization
 - 🎯 **Interactivity** — Support for buttons, links, and gestures
 - 📱 **Responsive** — Support for various screen sizes
 - 🔄 **Navigation** — Smooth transitions between stories and groups
 - 🎛️ **Flexible Customization** — Rich customization options
 - 🏗️ **Dual Platform Support** — Works in both UIKit and SwiftUI
+- 🎪 **Custom Content** — Support for custom SwiftUI views in stories
+- 🎨 **Theming** — Centralized configuration with StoriesModel
 
 ## 🚀 Quick Start
 
@@ -28,19 +37,19 @@ Add StoriesKit to your project via Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/yourusername/StoriesKit.git", from: "1.0.0")
+    .package(url: "https://github.com/dimzfresh/StoriesKit.git", from: "2.0.0")
 ]
 ```
 
 ### Basic Usage
 
-#### UIKit
+#### UIKit with StoriesModel
 
 ```swift
 import StoriesKit
 
-// Create stories for UIKit
-let storiesViewController = Stories.build(
+// Create stories configuration
+let storiesModel = StoriesModel(
     groups: [
         StoriesGroupModel(
             id: "user1",
@@ -51,14 +60,41 @@ let storiesViewController = Stories.build(
                     title: AttributedString("Story Title"),
                     subtitle: AttributedString("Story Subtitle"),
                     backgroundColor: .systemBlue,
-                    backgroundImage: StoriesImageModel(
-                        image: .url(URL(string: "https://example.com/story.jpg")!)
+                    mediaSource: StoriesMediaModel(
+                        media: .image(.url(URL(string: "https://example.com/story.jpg")!))
                     ),
                     duration: 5.0
                 )
             ]
         )
     ],
+    backgroundColor: .black,
+    progress: StoriesModel.Progress(
+        lineSize: 3.0,
+        gap: 2.0,
+        viewedColor: .gray,
+        unviewedColor: .green,
+        interItemSpacing: 4.0,
+        containerPadding: 16.0
+    ),
+    avatar: StoriesModel.Avatar(
+        size: 60.0,
+        padding: 8.0,
+        progressPadding: 4.0
+    ),
+    userName: StoriesModel.Text(
+        font: .systemFont(ofSize: 16, weight: .medium),
+        color: .white,
+        lineLimit: 1,
+        padding: 8.0,
+        spacingFromAvatar: 8.0,
+        multilineTextAlignment: .center
+    )
+)
+
+// Create stories for UIKit
+let storiesViewController = Stories.build(
+    model: storiesModel,
     delegate: self
 )
 
@@ -74,33 +110,67 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        // Create pure SwiftUI View
+        // Create pure SwiftUI View with StoriesModel
         Stories.build(
-            groups: [
-                StoriesGroupModel(
-                    id: "user1",
-                    title: "User 1",
-                    avatarImage: .url(URL(string: "https://example.com/avatar.jpg")!),
-                    stories: [
-                        StoriesPageModel(
-                            title: AttributedString("Story Title"),
-                            subtitle: AttributedString("Story Subtitle"),
-                            backgroundColor: .blue,
-                            backgroundImage: StoriesImageModel(
-                                image: .url(URL(string: "https://example.com/story.jpg")!)
-                            ),
-                            duration: 5.0
-                        )
-                    ]
-                )
-            ],
-            delegate: self
+            model: StoriesModel(
+                groups: [
+                    StoriesGroupModel(
+                        id: "user1",
+                        title: "User 1",
+                        avatarImage: .url(URL(string: "https://example.com/avatar.jpg")!),
+                        stories: [
+                            StoriesPageModel(
+                                title: AttributedString("Story Title"),
+                                subtitle: AttributedString("Story Subtitle"),
+                                backgroundColor: .blue,
+                                mediaSource: StoriesMediaModel(
+                                    media: .image(.url(URL(string: "https://example.com/story.jpg")!))
+                                ),
+                                duration: 5.0
+                            )
+                        ]
+                    )
+                ],
+                backgroundColor: .black
+            )
         )
     }
 }
 ```
 
 ## 📖 Detailed Documentation
+
+### StoriesModel - Central Configuration
+
+The new `StoriesModel` provides centralized configuration for all StoriesKit components:
+
+```swift
+let storiesModel = StoriesModel(
+    groups: [/* StoriesGroupModel array */],
+    backgroundColor: .black,
+    progress: StoriesModel.Progress(
+        lineSize: 3.0,           // Progress bar thickness
+        gap: 2.0,                // Gap between segments
+        viewedColor: .gray,       // Color for viewed segments
+        unviewedColor: .green,    // Color for unviewed segments
+        interItemSpacing: 4.0,    // Spacing between progress bars
+        containerPadding: 16.0    // Container padding
+    ),
+    avatar: StoriesModel.Avatar(
+        size: 60.0,              // Avatar size
+        padding: 8.0,             // Internal padding
+        progressPadding: 4.0      // Padding around progress circle
+    ),
+    userName: StoriesModel.Text(
+        font: .systemFont(ofSize: 16, weight: .medium),
+        color: .white,
+        lineLimit: 1,
+        padding: 8.0,
+        spacingFromAvatar: 8.0,
+        multilineTextAlignment: .center
+    )
+)
+```
 
 ### Data Models
 
@@ -112,43 +182,87 @@ StoriesGroupModel(
     id: "unique_id",
     title: "Group Title",
     avatarImage: .url(URL(string: "avatar_url")!),
-    stories: [/* array of stories */],
-    isViewed: false
+    stories: [/* array of stories */]
 )
 ```
 
 #### StoriesPageModel
-Individual story page:
+Individual story page with support for images, videos, and custom content:
 
 ```swift
+// Image story
 StoriesPageModel(
     title: AttributedString("Title"),
     subtitle: AttributedString("Subtitle"),
     backgroundColor: .systemBlue,
-    button: StoriesPageModel.Button(
-        title: AttributedString("Button"),
-        backgroundColor: .white,
-        corners: .radius(8),
-        actionType: .link(URL(string: "https://example.com")!)
-    ),
-    backgroundImage: StoriesImageModel(
-        image: .url(URL(string: "image_url")!)
+    mediaSource: StoriesMediaModel(
+        media: .image(.url(URL(string: "image_url")!))
     ),
     duration: 4.0
 )
-```
 
-#### StoriesImageModel
-Model for images with support for various sources:
+// Video story
+StoriesPageModel(
+    title: AttributedString("Video Title"),
+    subtitle: AttributedString("Video Subtitle"),
+    backgroundColor: .black,
+    mediaSource: StoriesMediaModel(
+        media: .video(.url(URL(string: "video_url")!))
+    ),
+    duration: 8.0
+)
 
-```swift
-StoriesImageModel(
-    image: .url(URL(string: "image_url")!), // or .image(UIImage)
-    placeholder: UIImage(named: "placeholder"),
-    fadeInDuration: 0.25,
-    isViewed: false
+// Custom content story
+StoriesPageModel(
+    title: AttributedString("Custom Content"),
+    subtitle: AttributedString("With custom SwiftUI view"),
+    backgroundColor: .purple,
+    mediaSource: StoriesMediaModel(
+        media: .image(.url(URL(string: "background_url")!))
+    ),
+    content: AnyView(
+        VStack {
+            Text("Custom Content")
+                .font(.title)
+                .foregroundColor(.white)
+            Button("Custom Button") {
+                // Custom action
+            }
+        }
+    ),
+    duration: 6.0
 )
 ```
+
+#### StoriesMediaModel
+Model for media (images and videos) with support for various sources:
+
+```swift
+// Image media
+StoriesMediaModel(
+    media: .image(.url(URL(string: "image_url")!)) // or .image(UIImage)
+)
+
+// Video media
+StoriesMediaModel(
+    media: .video(.url(URL(string: "video_url")!)) // or .video(AVAsset)
+)
+
+// Local video
+StoriesMediaModel(
+    media: .video(.local(AVAsset(url: localVideoURL)))
+)
+```
+
+#### Video Player Features
+
+StoriesKit includes an advanced video player with:
+
+- **Preloading** - Videos are preloaded to avoid black screen flickering
+- **State Management** - Centralized video player state management
+- **Timer Synchronization** - Video playback is synchronized with story timers
+- **Smooth Transitions** - Seamless switching between videos
+- **Memory Efficient** - Single player instance reused across all videos
 
 ### Delegate
 
@@ -195,6 +309,57 @@ extension YourViewController: IStoriesDelegate {
 
 // Custom rounding
 .corners = .radius(12)
+```
+
+## 🎥 Video Support Examples
+
+### Video Stories with Custom Content
+
+```swift
+let videoStories = [
+    StoriesPageModel(
+        title: AttributedString("Amazing Video"),
+        subtitle: AttributedString("Check out this cool content"),
+        backgroundColor: .black,
+        mediaSource: StoriesMediaModel(
+            media: .video(.url(URL(string: "https://example.com/video.mp4")!))
+        ),
+        content: AnyView(
+            VStack {
+                Text("🎬 Video Story")
+                    .font(.title)
+                    .foregroundColor(.white)
+                Text("Tap to interact")
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.8))
+            }
+        ),
+        duration: 10.0
+    )
+]
+```
+
+### Mixed Media Stories
+
+```swift
+let mixedStories = [
+    // Image story
+    StoriesPageModel(
+        title: AttributedString("Photo Story"),
+        mediaSource: StoriesMediaModel(
+            media: .image(.url(URL(string: "https://example.com/photo.jpg")!))
+        ),
+        duration: 4.0
+    ),
+    // Video story
+    StoriesPageModel(
+        title: AttributedString("Video Story"),
+        mediaSource: StoriesMediaModel(
+            media: .video(.url(URL(string: "https://example.com/video.mp4")!))
+        ),
+        duration: 8.0
+    )
+]
 ```
 
 ## 🚀 Integration Examples
@@ -345,23 +510,36 @@ StoriesKit is built on modern architecture using:
 - **Combine** — for reactive programming
 - **MVVM** — architectural pattern
 - **Kingfisher** — for image loading and caching
+- **AVFoundation** — for video playback
 
 ### Main Components
 
 - `Stories` — main class for creating stories
+- `StoriesModel` — centralized configuration model
+- `StoriesStateManager` — centralized state management
+- `VideoPlayerStateManager` — video player state management
 - `ContainerView` — SwiftUI container for stories
 - `ContentView` — main content with navigation
 - `PageView` — individual story page
 - `ViewModel` — state management and logic
 - `ViewController` — UIKit presentation
 - `ProgressBarView` — progress indicator
-- `StoriesImageView` — image display
+- `StoriesMediaView` — universal media display (images/videos)
+- `VideoPlayerView` — advanced video player component
 
 ### Events and State
 
 - `ViewEvent` — user events (taps, swipes, timers)
 - `ViewState` — current state (groups, progress, indices)
 - `IStoriesDelegate` — protocol for event handling
+- `VideoPlayerState` — video player states (idle, playing, paused)
+
+### State Management
+
+- **Centralized State** — All state managed through `StoriesStateManager`
+- **Video Synchronization** — Video playback synchronized with story timers
+- **Memory Efficient** — Single video player instance reused across all videos
+- **Reactive Updates** — UI updates automatically when state changes
 
 ## 📱 Requirements
 
@@ -380,6 +558,27 @@ StoriesKit is distributed under the MIT license. See the [LICENSE](LICENSE) file
 ## 🤝 Contributing
 
 We welcome contributions to StoriesKit! Please read our [contributing guidelines](CONTRIBUTING.md).
+
+## 🆕 What's New
+
+### Version 2.0 Features
+
+- **🎥 Video Support** — Full video playback with preloading and state management
+- **🎨 StoriesModel** — Centralized configuration for all components
+- **🎪 Custom Content** — Support for custom SwiftUI views in stories
+- **⚡ Performance** — Optimized video player with single instance reuse
+- **🔄 State Management** — Centralized state management with StoriesStateManager
+- **🎯 Timer Sync** — Video playback synchronized with story timers
+- **🎨 Theming** — Rich customization options for all UI components
+
+### Migration Guide
+
+If you're upgrading from version 1.x:
+
+1. **Replace `StoriesImageModel`** with `StoriesMediaModel`
+2. **Use `StoriesModel`** for configuration instead of individual parameters
+3. **Update to new `StoriesPageModel`** structure with `mediaSource`
+4. **Add video support** using `.video()` media type
 
 ## 📞 Support
 

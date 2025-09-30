@@ -4,18 +4,19 @@ import AVKit
 import Combine
 
 // MARK: - Video Player State Manager
-public enum VideoPlayerState {
-    case idle
-    case playing
-    case paused
-}
 
 public class VideoPlayerStateManager: ObservableObject {
     public static let shared = VideoPlayerStateManager()
     
     @Published public private(set) var currentState: VideoPlayerState = .idle
     
+    public let currentPlayer = AVPlayer()
+
     private init() {}
+    
+    public func setCurrentPlayerItem(_ playerItem: AVPlayerItem?) {
+        currentPlayer.replaceCurrentItem(with: playerItem)
+    }
     
     public func setState(_ state: VideoPlayerState) {
         DispatchQueue.main.async {
@@ -25,14 +26,23 @@ public class VideoPlayerStateManager: ObservableObject {
     
     public func setPlaying() {
         setState(.playing)
+        currentPlayer.play()
     }
     
     public func setPaused() {
         setState(.paused)
+        currentPlayer.pause()
     }
     
     public func setIdle() {
         setState(.idle)
+        currentPlayer.pause()
+    }
+
+    public enum VideoPlayerState {
+        case idle
+        case playing
+        case paused
     }
 }
 
@@ -63,17 +73,22 @@ public struct VideoPlayerRepresentable: UIViewControllerRepresentable {
     public func makeUIViewController(context: Context) -> UIViewController {
         let controller = UIViewController()
         controller.modalTransitionStyle = .crossDissolve
-        let player: AVPlayer
         
+        let playerItem: AVPlayerItem
         switch videoSource {
         case let .local(asset):
-            player = .init(playerItem: .init(asset: asset))
+            playerItem = .init(asset: asset)
         case let .remote(url):
-            player = .init(url: url)
+            playerItem = .init(url: url)
         }
         
+        playerItem.preferredForwardBufferDuration = 0.5
+        
+        let player = stateManager.currentPlayer
         player.isMuted = isMuted
         player.automaticallyWaitsToMinimizeStalling = false
+        
+        stateManager.setCurrentPlayerItem(playerItem)
         
         let playerLayer = AVPlayerLayer(player: player)
         playerLayer.videoGravity = .resizeAspectFill
@@ -115,6 +130,7 @@ public struct VideoPlayerRepresentable: UIViewControllerRepresentable {
         
         init(_ parent: VideoPlayerRepresentable) {
             self.parent = parent
+            super.init()
         }
     }
 }
@@ -151,15 +167,6 @@ public struct VideoPlayerView: View {
             stateManager: stateManager,
             playerBinding: $player
         )
-        .onReceive(stateManager.$currentState) { state in
-            switch state {
-            case .playing:
-                player?.play()
-            case .paused:
-                player?.pause()
-            case .idle:
-                player?.pause()
-            }
-        }
+        .transition(.opacity.animation(.easeInOut(duration: 0.1)))
     }
 }

@@ -270,38 +270,23 @@ extension Stories {
         private func handleLongPressChange(_ isPressing: Bool) {
             if isPressing {
                 viewModel.send(.didPauseTimer)
-                // Оповещаем менеджер плеера о паузе только если текущая страница - видео
-                if isCurrentPageVideo() {
-                    VideoPlayerStateManager.shared.setPaused()
-                }
+
+                VideoPlayerStateManager.shared.setPaused()
             } else {
                 viewModel.send(.didResumeTimer)
-                // Оповещаем менеджер плеера о возобновлении только если текущая страница - видео
-                if isCurrentPageVideo() {
-                    VideoPlayerStateManager.shared.setPlaying()
-                }
+
+                VideoPlayerStateManager.shared.setPlaying()
             }
         }
         
-        private func isCurrentPageVideo() -> Bool {
-            guard let current = viewModel.state.current,
-                  let currentPage = current.activePages[current.selectedGroup.id] else {
-                return false
-            }
-            
-            switch currentPage.mediaSource.media {
-            case .video:
-                return true
-            case .image:
-                return false
-            }
-        }
 
         private func handleDragChanged(
             _ value: DragGesture.Value,
             proxy: ScrollViewProxy
         ) {
             viewModel.send(.didPauseTimer)
+
+            VideoPlayerStateManager.shared.setPaused()
 
             if let dragDirection {
                 handleDragWithDirection(
@@ -344,6 +329,8 @@ extension Stories {
             }
 
             viewModel.send(.didResumeTimer)
+
+            VideoPlayerStateManager.shared.setPlaying()
             self.dragDirection = nil
         }
 
