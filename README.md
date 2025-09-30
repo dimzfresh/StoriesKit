@@ -582,7 +582,7 @@ If you're upgrading from version 1.x:
 
 ## 📞 Support
 
-If you have questions or suggestions, create an [issue](https://github.com/yourusername/StoriesKit/issues) or contact us.
+If you have questions or suggestions, create an [issue](https://github.com/dimzfresh/StoriesKit/issues) or contact us.
 
 ---
 
