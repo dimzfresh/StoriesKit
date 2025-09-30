@@ -43,7 +43,7 @@ extension Stories {
 
         private func storyPageView(_ model: StoriesPageModel) -> some SwiftUI.View {
             ZStack {
-                Color(model.backgroundColor)
+                Color.clear
                     .overlay {
                         StoriesMediaView(
                             mediaModel: model.mediaSource,
@@ -69,7 +69,7 @@ extension Stories {
                     .overlay {
                         contentOverlay(for: model)
                     }
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .clipShape(RoundedRectangle(cornerRadius: getAdaptiveCornerRadius(model.corners)))
                     .scaleEffect(getScaleEffect())
                     .padding(.top, safeAreaInsets.top)
                     .padding(.bottom, safeAreaInsets.bottom + 16)
@@ -105,7 +105,7 @@ extension Stories {
         }
 
         private func getAdaptiveCornerRadius(
-            _ corners: StoriesPageModel.Button.Corners
+            _ corners: StoriesPageModel.Corners
         ) -> CGFloat {
             switch corners {
             case .none: 0
@@ -137,8 +137,12 @@ extension Stories {
         }
 
         private func contentOverlay(for model: StoriesPageModel) -> some SwiftUI.View {
-            VStack(alignment: .center, spacing: 0) {
-                VStack(spacing: 0) {
+            ZStack {
+                if let content = model.content {
+                    content
+                }
+                
+                VStack(alignment: .center, spacing: 0) {
                     progressBarsView()
                         .padding(.top, 12)
                         .padding(.horizontal, 10)
@@ -146,26 +150,12 @@ extension Stories {
                     headerView()
                         .padding(.top, 8)
                         .padding(.horizontal, 16)
-                }
 
-                Text(model.title)
-                    .lineLimit(nil)
-                    .multilineTextAlignment(.center)
-                    .padding(.top, 32)
-                    .padding(.horizontal, 16)
+                    Spacer()
 
-                if let subtitle = model.subtitle {
-                    Text(subtitle)
-                        .lineLimit(nil)
-                        .multilineTextAlignment(.center)
-                        .padding(.top, 8)
-                        .padding(.horizontal, 16)
-                }
-
-                Spacer()
-
-                if let button = model.button {
-                    buttonView(for: button)
+                    if let button = model.button {
+                        buttonView(for: button)
+                    }
                 }
             }
         }

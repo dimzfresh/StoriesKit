@@ -154,16 +154,29 @@ enum StoriesFactory {
         var subtitleAttributed = AttributedString(subtitle)
         subtitleAttributed.font = .system(size: 16, weight: .medium)
         subtitleAttributed.foregroundColor = .white.opacity(0.9)
-        
-        return StoriesPageModel(
-            title: titleAttributed,
-            subtitle: subtitleAttributed,
-            backgroundColor: backgroundColor,
-            mediaSource: StoriesMediaModel(
+
+        let content = AnyView(
+            VStack {
+                Text(titleAttributed)
+                    .lineLimit(nil)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 32)
+                    .padding(.horizontal, 16)
+
+                Text(subtitleAttributed)
+                    .lineLimit(nil)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 8)
+                    .padding(.horizontal, 16)
+            }
+        )
+
+        return .init(
+            mediaSource: .init(
                 media: .image(.remote(URL(string: imageUrl)!))
             ),
             isViewed: isViewed,
-            duration: 5.0
+            content: content
         )
     }
 }

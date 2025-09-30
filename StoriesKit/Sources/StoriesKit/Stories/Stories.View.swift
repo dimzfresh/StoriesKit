@@ -26,7 +26,7 @@ extension Stories {
 
         var body: some SwiftUI.View {
             ZStack {
-                Color(viewModel.state.groups.first?.pages.first?.backgroundColor ?? .black)
+                viewModel.state.backgroundColor
                     .opacity(getBackgroundOpacity())
                     .ignoresSafeArea()
 

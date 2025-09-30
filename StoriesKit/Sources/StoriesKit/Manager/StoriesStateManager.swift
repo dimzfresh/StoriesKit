@@ -5,9 +5,11 @@ import SwiftUI
 /// State manager for Stories coordination and state management
 public final class StoriesStateManager: ObservableObject {
     @Published public private(set) var state: State = .default
+    let model: StoriesModel
 
-    public init(groups: [StoriesGroupModel]) {
-        state.groups = groups
+    public init(model: StoriesModel) {
+        self.model = model
+        state.groups = model.groups
     }
     
     /// Send event to state manager

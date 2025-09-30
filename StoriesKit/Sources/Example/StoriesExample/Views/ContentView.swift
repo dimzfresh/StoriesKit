@@ -3,13 +3,34 @@ import SwiftUI
 import StoriesKit
 
 struct ContentView: View {
-    @StateObject private var stateManager = StoriesStateManager(
-        groups: StoriesFactory.makeStoriesGroups()
-    )
-
+    @StateObject private var stateManager: StoriesStateManager
     private let randomImages = StoriesFactory.makeRandomImages()
-
     @Namespace private var avatarNamespace
+
+    init() {
+        let model = StoriesModel(
+            groups: StoriesFactory.makeStoriesGroups(),
+            backgroundColor: .black,
+            progress: .init(
+                lineWidth: 3,
+                gap: 2,
+                viewedColor: .gray.opacity(0.6),
+                unviewedColor: .green
+            ),
+            avatar: .init(
+                size: 70,
+                padding: EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+            ),
+            text: .init(
+                font: .system(size: 12, weight: .bold),
+                color: .white,
+                numberOfLines: 1,
+                alignment: .center
+            )
+        )
+        
+        _stateManager = .init(wrappedValue: .init(model: model))
+    }
 
     var body: some View {
         ZStack {

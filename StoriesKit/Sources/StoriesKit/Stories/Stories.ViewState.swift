@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 extension Stories {
     /// State model for Stories view
@@ -6,18 +7,21 @@ extension Stories {
         let id = UUID()
         let groups: [StoriesGroupModel]
         let progressBar: ProgressBar
+        let backgroundColor: Color
         let current: Current?
         let isPaused: Bool
 
         init(
             groups: [StoriesGroupModel],
             progressBar: ProgressBar,
+            backgroundColor: Color,
             current: Current?,
             isPaused: Bool = false
         ) {
             self.groups = groups
             self.progressBar = progressBar
             self.current = current
+            self.backgroundColor = backgroundColor
             self.isPaused = isPaused
         }
 
@@ -39,6 +43,7 @@ extension Stories {
                 progress: 0,
                 duration: 5
             ),
+            backgroundColor: .black,
             current: nil
         )
     }

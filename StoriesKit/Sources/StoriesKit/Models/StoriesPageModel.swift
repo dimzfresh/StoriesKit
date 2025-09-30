@@ -1,60 +1,74 @@
 import UIKit
+import SwiftUI
 
 /// Model representing an individual story page
 public struct StoriesPageModel: Hashable {
     public let id: String
-    public let title: AttributedString
-    public let subtitle: AttributedString?
-    public let backgroundColor: UIColor
     public let isViewed: Bool
-    public let button: StoriesPageModel.Button?
     public let mediaSource: StoriesMediaModel
+    public let button: StoriesPageModel.Button?
     public let duration: TimeInterval
-    
+    public let corners: Corners
+    public let content: AnyView?
+
     public init(
         id: String = UUID().uuidString,
-        title: AttributedString,
-        subtitle: AttributedString?,
-        backgroundColor: UIColor,
         mediaSource: StoriesMediaModel,
         isViewed: Bool = false,
         button: StoriesPageModel.Button? = nil,
-        duration: TimeInterval = 4.0
+        duration: TimeInterval = 5.0,
+        corners: Corners = .radius(12),
+        content: AnyView? = nil
     ) {
         self.id = id
-        self.title = title
-        self.subtitle = subtitle
-        self.backgroundColor = backgroundColor
         self.isViewed = isViewed
         self.button = button
         self.mediaSource = mediaSource
         self.duration = duration
+        self.corners = corners
+        self.content = content
     }
 
     func updateViewed(_ isViewed: Bool) -> Self {
         .init(
             id: id,
-            title: title,
-            subtitle: subtitle,
-            backgroundColor: backgroundColor,
             mediaSource: mediaSource,
             isViewed: isViewed,
             button: button,
-            duration: duration
+            duration: duration,
+            content: content
         )
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(isViewed)
+        hasher.combine(mediaSource)
+        hasher.combine(button)
+        hasher.combine(duration)
+        hasher.combine(corners)
+    }
+
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.id == rhs.id
+        && lhs.isViewed == rhs.isViewed
+        && lhs.mediaSource == rhs.mediaSource
+        && lhs.button == rhs.button
+        && lhs.duration == rhs.duration
+        && lhs.corners == rhs.corners
     }
 
     /// Button configuration for story pages
     public struct Button: Hashable {
         public let title: AttributedString
         public let backgroundColor: UIColor
-        public let corners: Button.Corners
+        public let corners: Corners
         public let actionType: ActionType
 
         public init(
             title: AttributedString,
             backgroundColor: UIColor,
-            corners: Button.Corners,
+            corners: Corners,
             actionType: ActionType
         ) {
             self.title = title
@@ -69,12 +83,12 @@ public struct StoriesPageModel: Hashable {
             case close
             case link(URL)
         }
+    }
 
-        /// Button corner styles
-        public enum Corners: Hashable {
-            case none
-            case circle
-            case radius(CGFloat)
-        }
+    /// Corner styles
+    public enum Corners: Hashable {
+        case none
+        case circle
+        case radius(CGFloat)
     }
 }

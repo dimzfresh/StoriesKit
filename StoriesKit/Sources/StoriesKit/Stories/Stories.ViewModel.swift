@@ -39,6 +39,7 @@ extension Stories {
                     progress: 0,
                     duration: initialPage?.duration ?? 5
                 ),
+                backgroundColor: stateManager.model.backgroundColor,
                 current: .init(
                     selectedGroup: initialGroup,
                     activePages: activePages
@@ -342,6 +343,7 @@ private extension Stories.ViewModel {
                 progress: progress,
                 duration: duration
             ),
+            backgroundColor: stateManager.model.backgroundColor,
             current: .init(
                 selectedGroup: selectedGroup,
                 activePages: activePages
