@@ -8,27 +8,7 @@ struct ContentView: View {
     @Namespace private var avatarNamespace
 
     init() {
-        let model = StoriesModel(
-            groups: StoriesFactory.makeStoriesGroups(),
-            backgroundColor: .black,
-            progress: .init(
-                lineSize: 3,
-                gap: 2,
-                viewedColor: .gray.opacity(0.6),
-                unviewedColor: .green
-            ),
-            avatar: .init(
-                size: 70,
-                padding: EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
-            ),
-            userName: .init(
-                font: .system(size: 12, weight: .bold),
-                color: .white,
-                numberOfLines: 1,
-                alignment: .center
-            )
-        )
-        
+        let model = StoriesModel(groups: StoriesFactory.makeStoriesGroups())
         _stateManager = .init(wrappedValue: .init(model: model))
     }
 
