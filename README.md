@@ -8,8 +8,8 @@
 
 **StoriesKit** is a modern Swift library for creating beautiful Instagram-style stories with support for both UIKit and SwiftUI. The library provides ready-to-use components for displaying stories with navigation, timers, and interactive elements.
 
-> ⭐ **Like this project?** Give it a star on GitHub! Your support helps us continue development and add new features.  
-> 🚀 **Want to see more?** Follow us for updates and new releases!
+> ⭐ **Like this project?** Give it a star on GitHub! Your support helps me continue development and add new features.  
+> 🚀 **Want to see more?** Follow me for updates and new releases!
 
 [![GitHub stars](https://img.shields.io/github/stars/dimzfresh/StoriesKit?style=social)](https://github.com/dimzfresh/StoriesKit)
 [![GitHub forks](https://img.shields.io/github/forks/dimzfresh/StoriesKit?style=social)](https://github.com/dimzfresh/StoriesKit)
