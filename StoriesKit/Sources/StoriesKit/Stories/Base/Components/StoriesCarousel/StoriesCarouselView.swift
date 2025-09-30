@@ -90,7 +90,7 @@ struct StoryGroupItemView: View {
                         .padding(configuration.avatar.padding)
                 }
             }
-            
+
             Text(group.title)
                 .font(configuration.title.font)
                 .foregroundColor(configuration.title.color)

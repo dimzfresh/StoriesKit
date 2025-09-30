@@ -40,7 +40,7 @@ public struct StoriesModel {
         public let padding: EdgeInsets
 
         public init(
-            size: CGFloat = 70,
+            size: CGFloat = 30,
             padding: EdgeInsets = EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
         ) {
             self.size = size
@@ -71,7 +71,7 @@ public struct StoriesModel {
             color: Color = .white,
             numberOfLines: Int = 1,
             alignment: TextAlignment = .center,
-            padding: EdgeInsets = EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+            padding: EdgeInsets = EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 0)
         ) {
             self.font = font
             self.color = color
@@ -87,9 +87,6 @@ public struct StoriesModel {
         /// Thickness/height of progress segments
         public let lineSize: CGFloat
 
-        /// Gap between progress segments
-        public let gap: CGFloat
-
         /// Spacing between multiple progress bars (if any)
         public let interItemSpacing: CGFloat
 
@@ -103,15 +100,13 @@ public struct StoriesModel {
         public let unviewedColor: Color
 
         public init(
-            lineSize: CGFloat = 3,
-            gap: CGFloat = 2,
+            lineSize: CGFloat = 2.5,
             interItemSpacing: CGFloat = 4,
             containerPadding: EdgeInsets = EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0),
             viewedColor: Color = .gray.opacity(0.6),
             unviewedColor: Color = .green
         ) {
             self.lineSize = lineSize
-            self.gap = gap
             self.interItemSpacing = interItemSpacing
             self.containerPadding = containerPadding
             self.viewedColor = viewedColor
