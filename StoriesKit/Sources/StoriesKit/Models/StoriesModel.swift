@@ -12,29 +12,35 @@ public struct StoriesModel {
     /// Progress indicator configuration
     public let progress: StoriesModel.Progress
 
-    /// Avatar configuration
-    public let avatar: StoriesModel.Avatar
-
-    /// Text configuration for user names
-    public let userName: StoriesModel.Text
-
-    /// Text configuration for dates
-    public let date: StoriesModel.Text
+    /// User data
+    public let user: StoriesModel.UserModel?
 
     public init(
         groups: [StoriesGroupModel],
         backgroundColor: Color = .black,
         progress: StoriesModel.Progress = .default,
-        avatar: StoriesModel.Avatar = .default,
-        userName: StoriesModel.Text = .userName,
-        date: StoriesModel.Text = .date
+        user: UserModel? = nil
     ) {
         self.groups = groups
         self.backgroundColor = backgroundColor
         self.progress = progress
-        self.avatar = avatar
-        self.userName = userName
-        self.date = date
+        self.user = user
+    }
+
+    public struct UserModel {
+        public let avatar: StoriesModel.Avatar
+        public let userName: StoriesModel.Text
+        public let date: StoriesModel.Text
+
+        public init(
+            avatar: StoriesModel.Avatar = .default,
+            userName: StoriesModel.Text = .userName,
+            date: StoriesModel.Text = .date
+        ) {
+            self.avatar = avatar
+            self.userName = userName
+            self.date = date
+        }
     }
 
     public struct Avatar {
@@ -76,7 +82,7 @@ public struct StoriesModel {
             color: Color = .white,
             numberOfLines: Int = 1,
             alignment: TextAlignment = .leading,
-            padding: EdgeInsets = EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 0)
+            padding: EdgeInsets = .init(top: 0, leading: 8, bottom: 0, trailing: 0)
         ) {
             self.font = font
             self.color = color
@@ -114,7 +120,7 @@ public struct StoriesModel {
         public init(
             lineSize: CGFloat = 2,
             interItemSpacing: CGFloat = 4,
-            containerPadding: EdgeInsets = EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0),
+            containerPadding: EdgeInsets = .init(top: 4, leading: 0, bottom: 0, trailing: 0),
             viewedColor: Color = .gray.opacity(0.6),
             unviewedColor: Color = .green
         ) {

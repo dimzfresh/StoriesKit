@@ -61,7 +61,6 @@ extension Stories {
 
         deinit {
             timer?.stop()
-            // Останавливаем видео плеер при уничтожении ViewModel
             VideoPlayerStateManager.shared.setIdle()
         }
 
@@ -122,7 +121,6 @@ private extension Stories.ViewModel {
         case let .didSwitchGroup(direction):
             switchToGroup(direction)
         case .didDismiss:
-            // Останавливаем видео плеер при закрытии StoriesKit
             VideoPlayerStateManager.shared.setIdle()
             stateManager.send(.didToggleGroup(nil))
         case .didPauseTimer:

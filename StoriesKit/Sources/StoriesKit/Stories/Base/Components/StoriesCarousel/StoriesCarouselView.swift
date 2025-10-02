@@ -8,7 +8,6 @@ public struct StoriesCarouselView: View {
     private let avatarNamespace: Namespace.ID
     private let configuration: StoriesCarouselConfiguration
 
-    @State private var scrollViewProxy: ScrollViewProxy?
     @State private var displayedGroups: [StoriesGroupModel] = []
 
     public init(
@@ -39,9 +38,6 @@ public struct StoriesCarouselView: View {
                     }
                 }
                 .padding(.horizontal, configuration.layout.horizontalPadding)
-            }
-            .onFirstAppear {
-                scrollViewProxy = proxy
             }
             .onReceive({ () -> AnyPublisher<([StoriesGroupModel], String?), Never> in
                 stateManager.$state

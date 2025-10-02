@@ -3,40 +3,6 @@ import AVFoundation
 import AVKit
 import Combine
 
-// MARK: - Video Player State Manager
-
-public class VideoPlayerStateManager: ObservableObject {
-    public static let shared = VideoPlayerStateManager()
-    
-    @Published public private(set) var currentState: VideoPlayerState = .idle
-
-    private init() {}
-    
-    public func setState(_ state: VideoPlayerState) {
-        DispatchQueue.main.async {
-            self.currentState = state
-        }
-    }
-    
-    public func setPlaying() {
-        setState(.playing)
-    }
-    
-    public func setPaused() {
-        setState(.paused)
-    }
-    
-    public func setIdle() {
-        setState(.idle)
-    }
-
-    public enum VideoPlayerState {
-        case idle
-        case playing
-        case paused
-    }
-}
-
 public struct VideoPlayerRepresentable: UIViewControllerRepresentable {
     private let videoSource: StoriesMediaModel.MediaSource.VideoType
     private let isMuted: Bool
@@ -75,7 +41,6 @@ public struct VideoPlayerRepresentable: UIViewControllerRepresentable {
         
         playerItem.preferredForwardBufferDuration = 0.5
         
-        // Создаем новый AVPlayer для каждой страницы
         let player = AVPlayer(playerItem: playerItem)
         player.isMuted = isMuted
         player.automaticallyWaitsToMinimizeStalling = false
@@ -90,7 +55,7 @@ public struct VideoPlayerRepresentable: UIViewControllerRepresentable {
         context.coordinator.player = player
         context.coordinator.playerLayer = playerLayer
         
-        DispatchQueue.main.async {
+        Task { @MainActor in
             playerBinding?.wrappedValue = player
         }
         

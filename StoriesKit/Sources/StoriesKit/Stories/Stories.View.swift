@@ -37,16 +37,24 @@ extension Stories {
                             currentPage: getCurrentPageForGroup(group),
                             verticalOffset: verticalDragOffset,
                             progressBars: getProgressBarsForGroup(group),
-                            onButtonAction: handleButtonAction,
                             isCurrentGroup: viewModel.state.current?.selectedGroup.id == group.id,
+                            avatarNamespace: avatarNamespace,
+                            stateManager: viewModel.stateManager,
+                            onCloseAction: {
+                                Task {
+                                    withAnimation(.easeInOut(duration: Constants.animationDuration)) {
+                                        verticalDragOffset = UIScreen.main.bounds.height * 0.3
+                                    }
+
+                                    viewModel.send(.didDismiss)
+                                }
+                            },
                             onTapPrevious: {
                                 viewModel.send(.didTapPrevious)
                             },
                             onTapNext: {
                                 viewModel.send(.didTapNext)
-                            },
-                            avatarNamespace: avatarNamespace,
-                            stateManager: viewModel.stateManager
+                            }
                         )
                         .onFirstAppear {
                             isFirstAppearance = false
@@ -112,36 +120,25 @@ extension Stories {
                 currentPage: getCurrentPageForGroup(group),
                 verticalOffset: verticalDragOffset,
                 progressBars: getProgressBarsForGroup(group),
-                onButtonAction: handleButtonAction,
                 isCurrentGroup: viewModel.state.current?.selectedGroup.id == group.id,
+                avatarNamespace: avatarNamespace,
+                stateManager: viewModel.stateManager,
+                onCloseAction: {
+                    Task {
+                        withAnimation(.easeInOut(duration: Constants.animationDuration)) {
+                            verticalDragOffset = UIScreen.main.bounds.height * 0.3
+                        }
+
+                        viewModel.send(.didDismiss)
+                    }
+                },
                 onTapPrevious: {
                     viewModel.send(.didTapPrevious)
                 },
                 onTapNext: {
                     viewModel.send(.didTapNext)
-                },
-                avatarNamespace: avatarNamespace,
-                stateManager: viewModel.stateManager
-            )
-        }
-
-        // MARK: - Button Actions
-
-        private func handleButtonAction(_ actionType: StoriesPageModel.Button.ActionType) {
-            switch actionType {
-            case .next:
-                viewModel.send(.didTapNext)
-            case .close:
-                Task {
-                    withAnimation(.easeInOut(duration: Constants.animationDuration)) {
-                        verticalDragOffset = UIScreen.main.bounds.height * 0.3
-                    }
-
-                    viewModel.send(.didDismiss)
                 }
-            case let .link(url):
-                viewModel.send(.didTapButtonLink(url))
-            }
+            )
         }
 
         // MARK: - Vertical Swipe Handlers

@@ -7,12 +7,12 @@ extension Stories {
         let currentPage: StoriesPageModel?
         let verticalOffset: CGFloat
         let progressBars: [ViewState.ProgressBar]
-        let onButtonAction: (StoriesPageModel.Button.ActionType) -> Void
         let isCurrentGroup: Bool
-        let onTapPrevious: () -> Void
-        let onTapNext: () -> Void
         let avatarNamespace: Namespace.ID
         let stateManager: StoriesStateManager
+        let onCloseAction: () -> Void
+        let onTapPrevious: () -> Void
+        let onTapNext: () -> Void
 
         @Environment(\.safeAreaInsets) private var safeAreaInsets
 
@@ -69,10 +69,9 @@ extension Stories {
                     .overlay {
                         contentOverlay(for: model)
                     }
-                    .clipShape(RoundedRectangle(cornerRadius: getAdaptiveCornerRadius(model.corners)))
+                    .clipShape(RoundedRectangle(cornerRadius: model.cornerRadius))
                     .scaleEffect(getScaleEffect())
-                    .padding(.top, safeAreaInsets.top)
-                    .padding(.bottom, safeAreaInsets.bottom + 16)
+                    .padding(model.padding)
             }
         }
 
@@ -105,16 +104,6 @@ extension Stories {
             return 1.0 - (progress * (1.0 - Constants.minScale))
         }
 
-        private func getAdaptiveCornerRadius(
-            _ corners: StoriesPageModel.Corners
-        ) -> CGFloat {
-            switch corners {
-            case .none: 0
-            case .circle: 50 * 0.5
-            case let .radius(radius): radius
-            }
-        }
-
         private func tapArea(isLeftSide: Bool) -> some SwiftUI.View {
             Rectangle()
                 .fill(.clear)
@@ -139,41 +128,39 @@ extension Stories {
 
         private func contentOverlay(for model: StoriesPageModel) -> some SwiftUI.View {
             ZStack {
-                if let content = model.content {
-                    content
-                }
-                
                 VStack(alignment: .center, spacing: 0) {
                     progressBarsView()
                         .padding(.top, 12)
                         .padding(.horizontal, 10)
 
                     headerView()
-                        .padding(.top, 8)
-                        .padding(.horizontal, 16)
+                        .padding(.top, 10)
+                        .padding(.horizontal, 10)
 
                     Spacer()
+                }
 
-                    if let button = model.button {
-                        buttonView(for: button)
-                    }
+                if let content = model.content {
+                    content
                 }
             }
         }
 
         private func headerView() -> some SwiftUI.View {
             HStack(spacing: 0) {
-                avatarView(stateManager.model.avatar)
+                if let user = stateManager.model.user {
+                    avatarView(user.avatar)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    usernameView(stateManager.model.userName)
-                    dateView(stateManager.model.date)
+                    VStack(alignment: .leading, spacing: 2) {
+                        usernameView(user.userName)
+                        dateView(user.date)
+                    }
                 }
 
                 Spacer()
 
                 Button {
-                    onButtonAction(.close)
+                    onCloseAction()
                 } label: {
                     Image(systemName: "xmark")
                         .resizable()
@@ -220,19 +207,6 @@ extension Stories {
                 .foregroundColor(model.color)
                 .multilineTextAlignment(model.alignment)
                 .padding(model.padding)
-        }
-
-        private func buttonView(for button: StoriesPageModel.Button) -> some SwiftUI.View {
-            Button {
-                onButtonAction(button.actionType)
-            } label: {
-                Text(button.title)
-                    .frame(width: 148, height: 50)
-            }
-            .background(button.backgroundColor)
-            .clipShape(RoundedRectangle(cornerRadius: getAdaptiveCornerRadius(button.corners)))
-            .padding(.bottom, safeAreaInsets.bottom + 24)
-            .onTapGesture {}
         }
 
         private func handleTapAreaAction(isLeftSide: Bool) {

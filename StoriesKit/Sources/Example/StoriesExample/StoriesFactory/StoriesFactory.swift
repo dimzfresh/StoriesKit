@@ -228,21 +228,33 @@ enum StoriesFactory {
         subtitleAttributed.font = .system(size: 16, weight: .medium)
         subtitleAttributed.foregroundColor = .white.opacity(0.9)
 
-        let content = AnyView(
-            VStack {
-                Text(titleAttributed)
-                    .lineLimit(nil)
-                    .multilineTextAlignment(.center)
-                    .padding(.top, 32)
-                    .padding(.horizontal, 16)
+        let content = VStack(spacing: 0) {
+            Text(titleAttributed)
+                .lineLimit(nil)
+                .multilineTextAlignment(.center)
+                .padding(.top, 32)
+                .padding(.horizontal, 16)
 
-                Text(subtitleAttributed)
-                    .lineLimit(nil)
-                    .multilineTextAlignment(.center)
-                    .padding(.top, 8)
-                    .padding(.horizontal, 16)
-            }
-        )
+            Text(subtitleAttributed)
+                .lineLimit(nil)
+                .multilineTextAlignment(.center)
+                .padding(.top, 8)
+                .padding(.horizontal, 16)
+
+            //                VStack(spacing: 12) {
+            //                    ForEach(Array(buttons.enumerated()), id: \.offset) { _, button in
+            //                        Button {
+            //
+            //                        } label: {
+            //                            Text("")
+            //                                .frame(width: 148, height: 50)
+            //                        }
+            //                    }
+            //                }
+            //                .padding(.bottom, 24)
+            //                .onTapGesture {}
+        }
+        .eraseToAnyView()
 
         return .init(
             date: date,

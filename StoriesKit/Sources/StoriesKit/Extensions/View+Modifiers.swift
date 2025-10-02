@@ -4,17 +4,6 @@ public extension View {
     func eraseToAnyView() -> AnyView {
         AnyView(self)
     }
-
-    func animate(
-        using animation: Animation = .easeInOut(duration: 0.25),
-        _ action: @escaping () -> Void
-    ) -> some View {
-        onAppear {
-            withAnimation(animation) {
-                action()
-            }
-        }
-    }
 }
 
 private struct OnFirstAppear: ViewModifier {

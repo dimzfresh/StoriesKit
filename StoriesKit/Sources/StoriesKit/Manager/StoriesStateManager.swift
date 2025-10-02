@@ -1,5 +1,5 @@
-import Foundation
 import Combine
+import Foundation
 import SwiftUI
 
 /// State manager for Stories coordination and state management
@@ -18,14 +18,22 @@ public final class StoriesStateManager: ObservableObject {
         case let .didToggleGroup(groupId):
             state.event = event
 
-            if let groupId {
-                withAnimation(.easeInOut(duration: 0.25)) {
-                    state.selectedGroupId = groupId
+            Task { @MainActor in
+                if let groupId {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        state.selectedGroupId = groupId
+                    }
+                } else {
+                    withAnimation(.easeOut(duration: 0.3)) {
+                        self.state.selectedGroupId = nil
+                    }
                 }
-            } else {
-                withAnimation(.easeOut(duration: 0.3)) {
-                    self.state.selectedGroupId = nil
-                }
+
+                await try? Task.sleep(UInt64(0.3 * Double(NSEC_PER_SEC)))
+
+                let firstGroups = state.groups.filter { $0.pages.contains(where: { !$0.isViewed }) }.sorted { $0.id < $1.id }
+                let viewedGroups = state.groups.filter { $0.pages.allSatisfy(\.isViewed) }.sorted { $0.id < $1.id }
+                state.groups = firstGroups + viewedGroups
             }
         case let .didSwitchGroup(groupId):
             state.event = event

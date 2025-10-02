@@ -7,9 +7,9 @@ public struct StoriesPageModel: Hashable {
     public let date: String
     public let mediaSource: StoriesMediaModel
     public let isViewed: Bool
-    public let button: StoriesPageModel.Button?
     public let duration: TimeInterval
-    public let corners: Corners
+    public let padding: EdgeInsets
+    public let cornerRadius: CGFloat
     public let content: AnyView?
 
     public init(
@@ -17,18 +17,18 @@ public struct StoriesPageModel: Hashable {
         date: String,
         mediaSource: StoriesMediaModel,
         isViewed: Bool = false,
-        button: StoriesPageModel.Button? = nil,
         duration: TimeInterval = 5.0,
-        corners: Corners = .radius(12),
+        padding: EdgeInsets = .init(top: 54, leading: 0, bottom: 44, trailing: 0),
+        cornerRadius: CGFloat = 12,
         content: AnyView? = nil
     ) {
         self.id = id
         self.date = date
         self.mediaSource = mediaSource
         self.isViewed = isViewed
-        self.button = button
         self.duration = duration
-        self.corners = corners
+        self.padding = padding
+        self.cornerRadius = cornerRadius
         self.content = content
     }
 
@@ -38,7 +38,6 @@ public struct StoriesPageModel: Hashable {
             date: date,
             mediaSource: mediaSource,
             isViewed: isViewed,
-            button: button,
             duration: duration,
             content: content
         )
@@ -49,51 +48,15 @@ public struct StoriesPageModel: Hashable {
         hasher.combine(isViewed)
         hasher.combine(date)
         hasher.combine(mediaSource)
-        hasher.combine(button)
         hasher.combine(duration)
-        hasher.combine(corners)
+        hasher.combine(cornerRadius)
     }
 
     public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.id == rhs.id
         && lhs.isViewed == rhs.isViewed
         && lhs.mediaSource == rhs.mediaSource
-        && lhs.button == rhs.button
         && lhs.duration == rhs.duration
-        && lhs.corners == rhs.corners
-    }
-
-    /// Button configuration for story pages
-    public struct Button: Hashable {
-        public let title: AttributedString
-        public let backgroundColor: Color
-        public let corners: Corners
-        public let actionType: ActionType
-
-        public init(
-            title: AttributedString,
-            backgroundColor: Color,
-            corners: Corners,
-            actionType: ActionType
-        ) {
-            self.title = title
-            self.backgroundColor = backgroundColor
-            self.corners = corners
-            self.actionType = actionType
-        }
-
-        /// Types of button actions
-        public enum ActionType: Hashable {
-            case next
-            case close
-            case link(URL)
-        }
-    }
-
-    /// Corner styles
-    public enum Corners: Hashable {
-        case none
-        case circle
-        case radius(CGFloat)
+        && lhs.cornerRadius == rhs.cornerRadius
     }
 }
