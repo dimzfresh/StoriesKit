@@ -192,45 +192,57 @@ Individual story page with support for images, videos, and custom content:
 ```swift
 // Image story
 StoriesPageModel(
-    title: AttributedString("Title"),
-    subtitle: AttributedString("Subtitle"),
-    backgroundColor: .systemBlue,
+    date: "Today",
     mediaSource: StoriesMediaModel(
         media: .image(.url(URL(string: "image_url")!))
     ),
-    duration: 4.0
+    duration: 4.0,
+    padding: EdgeInsets(top: 54, leading: 0, bottom: 44, trailing: 0),
+    cornerRadius: 12,
+    content: AnyView(
+        VStack(spacing: 0) {
+            Text("Story Title")
+                .font(.title)
+                .foregroundColor(.white)
+                .padding(.top, 32)
+                .padding(.horizontal, 16)
+            
+            Text("Story Subtitle")
+                .font(.body)
+                .foregroundColor(.white.opacity(0.9))
+                .padding(.top, 8)
+                .padding(.horizontal, 16)
+            
+            // Custom buttons in content
+            VStack(spacing: 12) {
+                Button("Next") {
+                    // Handle next action
+                }
+                .frame(width: 148, height: 50)
+                .background(Color.blue)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                
+                Button("Learn More") {
+                    // Handle link action
+                }
+                .frame(width: 148, height: 50)
+                .background(Color.green)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .padding(.bottom, 24)
+        }
+    )
 )
 
 // Video story
 StoriesPageModel(
-    title: AttributedString("Video Title"),
-    subtitle: AttributedString("Video Subtitle"),
-    backgroundColor: .black,
+    date: "Yesterday",
     mediaSource: StoriesMediaModel(
         media: .video(.url(URL(string: "video_url")!))
     ),
-    duration: 8.0
-)
-
-// Custom content story
-StoriesPageModel(
-    title: AttributedString("Custom Content"),
-    subtitle: AttributedString("With custom SwiftUI view"),
-    backgroundColor: .purple,
-    mediaSource: StoriesMediaModel(
-        media: .image(.url(URL(string: "background_url")!))
-    ),
-    content: AnyView(
-        VStack {
-            Text("Custom Content")
-                .font(.title)
-                .foregroundColor(.white)
-            Button("Custom Button") {
-                // Custom action
-            }
-        }
-    ),
-    duration: 6.0
+    duration: 8.0,
+    padding: EdgeInsets(top: 54, leading: 0, bottom: 44, trailing: 0),
+    cornerRadius: 12
 )
 ```
 
@@ -309,6 +321,96 @@ extension YourViewController: IStoriesDelegate {
 
 // Custom rounding
 .corners = .radius(12)
+```
+
+### StoriesCarouselView Configuration
+
+The carousel supports both circular and rounded rectangle corner styles:
+
+```swift
+let configuration = StoriesCarouselConfiguration(
+    layout: StoriesCarouselConfiguration.Layout(
+        itemSpacing: 16,
+        horizontalPadding: 16,
+        corners: .radius(12)  // Rounded rectangle with 12pt radius
+    ),
+    avatar: StoriesCarouselConfiguration.Avatar(
+        size: 70,
+        progressPadding: 6
+    ),
+    progress: StoriesCarouselConfiguration.Progress(
+        lineWidth: 3,
+        gap: 3,
+        viewedColor: .gray.opacity(0.6),
+        unviewedColor: .green.opacity(0.8)
+    )
+)
+
+StoriesCarouselView(
+    stateManager: stateManager,
+    avatarNamespace: avatarNamespace,
+    configuration: configuration
+)
+```
+
+#### Corner Styles
+
+```swift
+// Circular carousel items (default)
+corners: .circle
+
+// Rounded rectangle with custom radius
+corners: .radius(12)  // 12pt corner radius
+corners: .radius(8)   // 8pt corner radius
+```
+
+The corner style applies to both the avatar images and their progress indicator rings, ensuring visual consistency across all carousel items.
+
+### Custom Content with Buttons
+
+Buttons are now integrated directly into custom content views:
+
+```swift
+StoriesPageModel(
+    date: "Today",
+    mediaSource: StoriesMediaModel(
+        media: .image(.url(URL(string: "background_url")!))
+    ),
+    content: AnyView(
+        VStack(spacing: 0) {
+            Text("Welcome to Stories")
+                .font(.title)
+                .foregroundColor(.white)
+                .padding(.top, 32)
+                .padding(.horizontal, 16)
+            
+            Text("Discover amazing content")
+                .font(.body)
+                .foregroundColor(.white.opacity(0.9))
+                .padding(.top, 8)
+                .padding(.horizontal, 16)
+            
+            // Custom buttons with actions
+            VStack(spacing: 12) {
+                Button("Get Started") {
+                    // Handle button action
+                }
+                .frame(width: 148, height: 50)
+                .background(Color.blue)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                
+                Button("Learn More") {
+                    // Handle link action
+                }
+                .frame(width: 148, height: 50)
+                .background(Color.green)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .padding(.bottom, 24)
+        }
+    ),
+    duration: 6.0
+)
 ```
 
 ## 🎥 Video Support Examples
@@ -565,11 +667,14 @@ We welcome contributions to StoriesKit! Please read our [contributing guidelines
 
 - **🎥 Video Support** — Full video playback with preloading and state management
 - **🎨 StoriesModel** — Centralized configuration for all components
-- **🎪 Custom Content** — Support for custom SwiftUI views in stories
+- **🎪 Custom Content** — Support for custom SwiftUI views in stories with embedded buttons
 - **⚡ Performance** — Optimized video player with single instance reuse
 - **🔄 State Management** — Centralized state management with StoriesStateManager
 - **🎯 Timer Sync** — Video playback synchronized with story timers
 - **🎨 Theming** — Rich customization options for all UI components
+- **📱 Carousel Corners** — Support for both circular and rounded rectangle carousel items
+- **🎛️ Custom Buttons** — Buttons now integrated into custom content views
+- **📐 Flexible Layout** — Custom padding and corner radius for story pages
 
 ### Migration Guide
 
@@ -579,6 +684,9 @@ If you're upgrading from version 1.x:
 2. **Use `StoriesModel`** for configuration instead of individual parameters
 3. **Update to new `StoriesPageModel`** structure with `mediaSource`
 4. **Add video support** using `.video()` media type
+5. **Buttons in custom content** — Move buttons from `StoriesPageModel.button` to custom `content` views
+6. **Carousel configuration** — Use `StoriesCarouselConfiguration` for carousel customization
+7. **Corner styles** — Use `Layout.CornerStyle` for carousel item shapes
 
 ## 📞 Support
 
