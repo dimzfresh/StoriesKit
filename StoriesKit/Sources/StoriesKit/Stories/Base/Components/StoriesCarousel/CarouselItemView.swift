@@ -8,8 +8,9 @@ struct CarouselItemView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            SegmentedCircleView(
+            SegmentedView(
                 segments: createCustomSegments(for: group),
+                corners: configuration.layout.corners,
                 lineWidth: configuration.progress.lineWidth,
                 size: configuration.avatar.size + configuration.avatar.progressPadding,
                 gap: configuration.progress.gap
@@ -52,24 +53,44 @@ struct CarouselItemView: View {
         self.configuration = configuration
     }
 
+    @ViewBuilder
     private func avatarImageView() -> some View {
-        StoriesMediaView(
-            mediaModel: .init(media: .image(group.avatarImage)),
-            placeholder: {
-                if let placeholder = group.placeholder {
-                    Image(uiImage: placeholder)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: configuration.avatar.size, height: configuration.avatar.size)
-                        .clipShape(Circle())
+        switch configuration.layout.corners {
+        case .circle:
+            StoriesMediaView(
+                mediaModel: .init(media: .image(group.avatarImage)),
+                placeholder: {
+                    if let placeholder = group.placeholder {
+                        avatarPlaceholderView(placeholder)
+                            .clipShape(Circle())
+                    }
                 }
-            }
-        )
-        .frame(width: configuration.avatar.size, height: configuration.avatar.size)
-        .clipShape(Circle())
+            )
+            .frame(width: configuration.avatar.size, height: configuration.avatar.size)
+            .clipShape(Circle())
+        case let .radius(cornerRadius):
+            StoriesMediaView(
+                mediaModel: .init(media: .image(group.avatarImage)),
+                placeholder: {
+                    if let placeholder = group.placeholder {
+                        avatarPlaceholderView(placeholder)
+                            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+                    }
+                }
+            )
+            .frame(width: configuration.avatar.size, height: configuration.avatar.size)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+        }
     }
 
-    private func createCustomSegments(for group: StoriesGroupModel) -> [SegmentedCircleView.Segment] {
+    private func avatarPlaceholderView(_ placeholder: UIImage) -> some View {
+        Image(uiImage: placeholder)
+            .resizable()
+            .scaledToFill()
+            .frame(width: configuration.avatar.size, height: configuration.avatar.size)
+    }
+
+    private func createCustomSegments(for group: StoriesGroupModel) -> [SegmentedView.Segment] {
         if group.pages.allSatisfy(\.isViewed) {
             [
                 .init(

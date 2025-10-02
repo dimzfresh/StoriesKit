@@ -38,7 +38,7 @@ public struct StoriesCarouselConfiguration {
         public init(
             size: CGFloat = 70,
             progressPadding: CGFloat = 6,
-            padding: EdgeInsets = EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+            padding: EdgeInsets = .init(top: 0, leading: 0, bottom: 0, trailing: 0)
         ) {
             self.size = size
             self.progressPadding = progressPadding
@@ -75,7 +75,7 @@ public struct StoriesCarouselConfiguration {
             numberOfLines: Int = 1,
             lineSpacing: CGFloat = 0,
             truncationMode: Text.TruncationMode = .tail,
-            padding: EdgeInsets = EdgeInsets(top: 12, leading: 0, bottom: 0, trailing: 0),
+            padding: EdgeInsets = .init(top: 12, leading: 0, bottom: 0, trailing: 0),
             multilineTextAlignment: TextAlignment = .center,
             font: Font = .system(size: 12, weight: .bold),
             color: Color = .primary
@@ -107,7 +107,7 @@ public struct StoriesCarouselConfiguration {
         public let unviewedColor: Color
 
         public init(
-            lineWidth: CGFloat = 3,
+            lineWidth: CGFloat = 2,
             gap: CGFloat = 3,
             viewedColor: Color = .gray.opacity(0.6),
             unviewedColor: Color = .green.opacity(0.8)
@@ -128,15 +128,26 @@ public struct StoriesCarouselConfiguration {
 
         /// Horizontal padding for the carousel
         public let horizontalPadding: CGFloat
+        
+        /// Corner style for carousel items
+        public let corners: CornerStyle
 
         public init(
-            itemSpacing: CGFloat = 16,
-            horizontalPadding: CGFloat = 16
+            itemSpacing: CGFloat = 8,
+            horizontalPadding: CGFloat = 16,
+            corners: CornerStyle = .circle
         ) {
             self.itemSpacing = itemSpacing
             self.horizontalPadding = horizontalPadding
+            self.corners = corners
         }
 
         public static let `default` = Self()
+        
+        /// Corner style options for carousel items
+        public enum CornerStyle: Hashable {
+            case circle
+            case radius(CGFloat)
+        }
     }
 }

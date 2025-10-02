@@ -1,19 +1,22 @@
 import SwiftUI
 
 /// A beautiful segmented circle view for showing progress through story segments
-public struct SegmentedCircleView: View {
+public struct SegmentedView: View {
     private let segments: [Segment]
+    private let corners: StoriesCarouselConfiguration.Layout.CornerStyle
     private let lineWidth: CGFloat
     private let size: CGFloat
     private let gap: CGFloat
 
     public init(
         segments: [Segment],
-        lineWidth: CGFloat = 3,
+        corners: StoriesCarouselConfiguration.Layout.CornerStyle,
+        lineWidth: CGFloat,
         size: CGFloat,
-        gap: CGFloat = 2
+        gap: CGFloat,
     ) {
         self.segments = segments
+        self.corners = corners
         self.lineWidth = lineWidth
         self.size = size
         self.gap = gap
@@ -28,7 +31,8 @@ public struct SegmentedCircleView: View {
                     totalSegments: segments.count,
                     lineWidth: lineWidth,
                     size: size,
-                    gap: gap
+                    gap: gap,
+                    corners: corners
                 )
             }
         }
@@ -54,18 +58,21 @@ public struct SegmentedCircleView: View {
 
 private struct SegmentView: View {
     let index: Int
-    let segment: SegmentedCircleView.Segment
+    let segment: SegmentedView.Segment
     let totalSegments: Int
     let lineWidth: CGFloat
     let size: CGFloat
     let gap: CGFloat
+    let corners: StoriesCarouselConfiguration.Layout.CornerStyle
 
     private var segmentAngle: Double {
         1.0 / Double(totalSegments)
     }
+
     private var gapAngle: Double {
         gap / (size * .pi)
     }
+
     private var rotationAngle: Double {
         Double(index) * 360.0 / Double(totalSegments) - 90
     }
@@ -75,24 +82,39 @@ private struct SegmentView: View {
     }
 
     var body: some View {
-        Circle()
-            .trim(from: effectiveGap, to: segmentAngle - effectiveGap)
-            .rotation(.degrees(rotationAngle))
-            .stroke(
-                segment.color,
-                style: StrokeStyle(
-                    lineWidth: lineWidth,
-                    lineCap: .square,
-                    lineJoin: .round
+        switch corners {
+        case .circle:
+            Circle()
+                .trim(from: effectiveGap, to: segmentAngle - effectiveGap)
+                .rotation(.degrees(rotationAngle))
+                .stroke(
+                    segment.color,
+                    style: StrokeStyle(
+                        lineWidth: lineWidth,
+                        lineCap: .square,
+                        lineJoin: .round
+                    )
                 )
-            )
-            .frame(width: size, height: size)
+                .frame(width: size, height: size)
+
+        case let .radius(cornerRadius):
+            RoundedRectangle(cornerRadius: cornerRadius + lineWidth * 0.5)
+                .stroke(
+                    segment.color,
+                    style: StrokeStyle(
+                        lineWidth: lineWidth,
+                        lineCap: .square,
+                        lineJoin: .round
+                    )
+                )
+                .frame(width: size, height: size)
+        }
     }
 }
 
 // MARK: - Factory Methods
 
-public extension SegmentedCircleView {
+public extension SegmentedView {
     static func createDefaultSegments(for group: StoriesGroupModel) -> [Segment] {
         if group.pages.allSatisfy(\.isViewed) {
             [.viewed]

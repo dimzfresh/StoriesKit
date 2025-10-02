@@ -122,7 +122,7 @@ public struct VideoPlayerView: View {
             stateManager: stateManager,
             playerBinding: $player
         )
-        .transition(.opacity.animation(.easeInOut(duration: 0.1)))
+        .transition(.opacity.animation(.easeInOut(duration: 0.2)))
         .onReceive(stateManager.$currentState) { state in
             switch state {
             case .playing:

@@ -54,7 +54,12 @@ struct ContentView: View {
 
             StoriesCarouselView(
                 stateManager: stateManager,
-                avatarNamespace: avatarNamespace
+                avatarNamespace: avatarNamespace,
+                configuration: StoriesCarouselConfiguration(
+                    layout: StoriesCarouselConfiguration.Layout(
+                        corners: .radius(12)  // Rounded rectangle with 12pt radius
+                    )
+                )
             )
         }
         .padding(.vertical, 16)
