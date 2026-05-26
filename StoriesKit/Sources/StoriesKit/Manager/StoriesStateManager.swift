@@ -32,14 +32,14 @@ public final class StoriesStateManager: ObservableObject {
                     }
                 }
 
-                await try? Task.sleep(UInt64(0.3 * Double(NSEC_PER_SEC)))
+                try? await Task.sleep(nanoseconds: 300_000_000)
 
                 state.groups = StoriesGroupModel.sortedForDisplay(state.groups)
             }
         case let .didSwitchGroup(groupId):
             state.event = event
             state.selectedGroupId = groupId
-        case let .didOpenLink(url):
+        case .didOpenLink:
             state.event = event
         case let .didViewPage(groupId, pageId):
             guard markPageAsViewed(groupId: groupId, pageId: pageId) else { return }

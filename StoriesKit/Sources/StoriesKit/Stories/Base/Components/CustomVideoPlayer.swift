@@ -167,10 +167,10 @@ struct VideoPlayerRepresentable: UIViewControllerRepresentable {
 
         private func observeDuration(playerItem: AVPlayerItem) {
             let report = { [weak self] in
-                guard let self, let videoManager else { return }
                 let seconds = playerItem.duration.seconds
-                Task { @MainActor in
-                    videoManager.reportDuration(seconds, generation: self.generation)
+                Task { @MainActor [weak self] in
+                    guard let self, let videoManager else { return }
+                    videoManager.reportDuration(seconds, generation: generation)
                 }
             }
 
@@ -187,14 +187,13 @@ struct VideoPlayerRepresentable: UIViewControllerRepresentable {
         private func observeProgress(player: AVPlayer, playerItem: AVPlayerItem) {
             let interval = CMTime(seconds: 0.05, preferredTimescale: 600)
             timeObserver = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
-                guard let self, let videoManager else { return }
-
                 let duration = playerItem.duration.seconds
                 guard duration.isFinite, duration > 0 else { return }
 
-                let progress = time.seconds / duration
-                Task { @MainActor in
-                    videoManager.reportProgress(CGFloat(progress), generation: self.generation)
+                let progress = CGFloat(time.seconds / duration)
+                Task { @MainActor [weak self] in
+                    guard let self, let videoManager else { return }
+                    videoManager.reportProgress(progress, generation: generation)
                 }
             }
         }
@@ -206,22 +205,16 @@ struct VideoPlayerRepresentable: UIViewControllerRepresentable {
             )
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                guard let self, let videoManager else { return }
+                Task { @MainActor [weak self] in
+                    guard let self, let videoManager, let player = self.player else { return }
 
-                if shouldLoop {
-                    player.seek(to: .zero)
-                    player.play()
-
-                    Task { @MainActor in
-                        videoManager.reportProgress(
-                            0,
-                            generation: self.generation
-                        )
-                    }
-                } else {
-                    Task { @MainActor in
-                        videoManager.reportEnded(generation: self.generation)
-                        self.onPlaybackEnd?()
+                    if shouldLoop {
+                        player.seek(to: .zero)
+                        player.play()
+                        videoManager.reportProgress(0, generation: generation)
+                    } else {
+                        videoManager.reportEnded(generation: generation)
+                        onPlaybackEnd?()
                     }
                 }
             }
