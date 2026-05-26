@@ -2,33 +2,58 @@ import SwiftUI
 
 /// SwiftUI view for displaying story progress bar
 struct ProgressBarView: View {
-    let progress: CGFloat
-    let duration: TimeInterval
+    @Binding var progress: CGFloat
+    @Binding var duration: TimeInterval
     let height: CGFloat
-    
+
+    @State private var trackWidth: CGFloat = 0
+
+    private var clampedProgress: CGFloat {
+        min(max(progress, 0), 1)
+    }
+
+    var body: some View {
+        ZStack(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 1)
+                .fill(.white.opacity(0.3))
+                .frame(height: height)
+
+            RoundedRectangle(cornerRadius: 1)
+                .fill(.white)
+                .frame(width: trackWidth * clampedProgress, height: height)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: height)
+        .background {
+            GeometryReader { geometry in
+                Color.clear
+                    .onAppear {
+                        trackWidth = geometry.size.width
+                    }
+                    .onChange(of: geometry.size.width) { width in
+                        trackWidth = width
+                    }
+            }
+        }
+    }
+
+    init(
+        progress: Binding<CGFloat>,
+        duration: Binding<TimeInterval>,
+        height: CGFloat = 2
+    ) {
+        _progress = progress
+        _duration = duration
+        self.height = height
+    }
+
     init(
         progress: CGFloat,
         duration: TimeInterval,
         height: CGFloat = 2
     ) {
-        self.progress = progress
-        self.duration = duration
+        _progress = .constant(progress)
+        _duration = .constant(duration)
         self.height = height
-    }
-    
-    var body: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .leading) {
-                RoundedRectangle(cornerRadius: 1)
-                    .fill(.white.opacity(0.3))
-                    .frame(height: height)
-                
-                RoundedRectangle(cornerRadius: 1)
-                    .fill(.white)
-                    .frame(width: geometry.size.width * progress, height: height)
-                    .animation(.linear(duration: 0.1), value: progress)
-            }
-        }
-        .frame(height: height)
     }
 }

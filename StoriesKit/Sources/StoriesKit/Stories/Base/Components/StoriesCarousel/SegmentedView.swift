@@ -8,20 +8,6 @@ public struct SegmentedView: View {
     private let size: CGFloat
     private let gap: CGFloat
 
-    public init(
-        segments: [Segment],
-        corners: StoriesCarouselConfiguration.Layout.CornerStyle,
-        lineWidth: CGFloat,
-        size: CGFloat,
-        gap: CGFloat,
-    ) {
-        self.segments = segments
-        self.corners = corners
-        self.lineWidth = lineWidth
-        self.size = size
-        self.gap = gap
-    }
-
     public var body: some View {
         ZStack {
             ForEach(Array(segments.enumerated()), id: \.offset) { index, segment in
@@ -36,6 +22,20 @@ public struct SegmentedView: View {
                 )
             }
         }
+    }
+
+    public init(
+        segments: [Segment],
+        corners: StoriesCarouselConfiguration.Layout.CornerStyle,
+        lineWidth: CGFloat,
+        size: CGFloat,
+        gap: CGFloat,
+    ) {
+        self.segments = segments
+        self.corners = corners
+        self.lineWidth = lineWidth
+        self.size = size
+        self.gap = gap
     }
 
     public struct Segment: Hashable {
@@ -116,7 +116,7 @@ private struct SegmentView: View {
 
 public extension SegmentedView {
     static func createDefaultSegments(for group: StoriesGroupModel) -> [Segment] {
-        if group.pages.allSatisfy(\.isViewed) {
+        if group.isFullyViewed {
             [.viewed]
         } else {
             (0..<group.pages.count).map { index in

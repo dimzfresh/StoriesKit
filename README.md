@@ -3,7 +3,7 @@
 ![StoriesKit Demo](./StoriesKit/assets/demo.gif)
 
 [![Swift](https://img.shields.io/badge/Swift-5.9-orange.svg)](https://swift.org)
-[![iOS](https://img.shields.io/badge/iOS-15.0+-blue.svg)](https://developer.apple.com/ios/)
+[![iOS](https://img.shields.io/badge/iOS-16.0+-blue.svg)](https://developer.apple.com/ios/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 **StoriesKit** is a modern Swift library for creating beautiful Instagram-style stories with support for both UIKit and SwiftUI. The library provides ready-to-use components for displaying stories with navigation, timers, and interactive elements.
@@ -43,65 +43,6 @@ dependencies: [
 
 ### Basic Usage
 
-#### UIKit with StoriesModel
-
-```swift
-import StoriesKit
-
-// Create stories configuration
-let storiesModel = StoriesModel(
-    groups: [
-        StoriesGroupModel(
-            id: "user1",
-            title: "User 1",
-            avatarImage: .url(URL(string: "https://example.com/avatar.jpg")!),
-            stories: [
-                StoriesPageModel(
-                    title: AttributedString("Story Title"),
-                    subtitle: AttributedString("Story Subtitle"),
-                    backgroundColor: .systemBlue,
-                    mediaSource: StoriesMediaModel(
-                        media: .image(.url(URL(string: "https://example.com/story.jpg")!))
-                    ),
-                    duration: 5.0
-                )
-            ]
-        )
-    ],
-    backgroundColor: .black,
-    progress: StoriesModel.Progress(
-        lineSize: 3.0,
-        gap: 2.0,
-        viewedColor: .gray,
-        unviewedColor: .green,
-        interItemSpacing: 4.0,
-        containerPadding: 16.0
-    ),
-    avatar: StoriesModel.Avatar(
-        size: 60.0,
-        padding: 8.0,
-        progressPadding: 4.0
-    ),
-    userName: StoriesModel.Text(
-        font: .systemFont(ofSize: 16, weight: .medium),
-        color: .white,
-        lineLimit: 1,
-        padding: 8.0,
-        spacingFromAvatar: 8.0,
-        multilineTextAlignment: .center
-    )
-)
-
-// Create stories for UIKit
-let storiesViewController = Stories.build(
-    model: storiesModel,
-    delegate: self
-)
-
-// Present
-present(storiesViewController, animated: true)
-```
-
 #### SwiftUI
 
 ```swift
@@ -109,33 +50,76 @@ import StoriesKit
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var stateManager: StoriesStateManager
+    @Namespace private var avatarNamespace
+
+    init() {
+        let model = StoriesModel(
+            groups: [
+                StoriesGroupModel(
+                    id: "user1",
+                    title: "User 1",
+                    avatarImage: .remote("https://example.com/avatar.jpg"),
+                    pages: [
+                        StoriesPageModel(
+                            date: "Today",
+                            mediaSource: StoriesMediaModel(
+                                media: .image(.remote("https://example.com/story.jpg"))
+                            ),
+                            duration: 5.0
+                        )
+                    ]
+                )
+            ],
+            backgroundColor: .black,
+            user: .init()
+        )
+        _stateManager = .init(wrappedValue: .init(model: model))
+    }
+
     var body: some View {
-        // Create pure SwiftUI View with StoriesModel
+        StoriesCarouselView(
+            stateManager: stateManager,
+            avatarNamespace: avatarNamespace
+        )
+        .overlay {
+            if stateManager.state.isShown {
+                Stories.build(
+                    stateManager: stateManager,
+                    avatarNamespace: avatarNamespace
+                )
+            }
+        }
+    }
+}
+```
+
+#### UIKit
+
+Present stories from a SwiftUI wrapper (required for `Namespace` matched geometry with the carousel):
+
+```swift
+import StoriesKit
+import SwiftUI
+
+private struct StoriesPresentationView: View {
+    @ObservedObject var stateManager: StoriesStateManager
+    @Namespace private var avatarNamespace
+
+    var body: some View {
         Stories.build(
-            model: StoriesModel(
-                groups: [
-                    StoriesGroupModel(
-                        id: "user1",
-                        title: "User 1",
-                        avatarImage: .url(URL(string: "https://example.com/avatar.jpg")!),
-                        stories: [
-                            StoriesPageModel(
-                                title: AttributedString("Story Title"),
-                                subtitle: AttributedString("Story Subtitle"),
-                                backgroundColor: .blue,
-                                mediaSource: StoriesMediaModel(
-                                    media: .image(.url(URL(string: "https://example.com/story.jpg")!))
-                                ),
-                                duration: 5.0
-                            )
-                        ]
-                    )
-                ],
-                backgroundColor: .black
-            )
+            stateManager: stateManager,
+            avatarNamespace: avatarNamespace
         )
     }
 }
+
+// Present from UIKit
+let hostingController = UIHostingController(
+    rootView: StoriesPresentationView(stateManager: stateManager)
+)
+hostingController.modalPresentationStyle = .overFullScreen
+present(hostingController, animated: true)
 ```
 
 ## 📖 Detailed Documentation
@@ -149,25 +133,19 @@ let storiesModel = StoriesModel(
     groups: [/* StoriesGroupModel array */],
     backgroundColor: .black,
     progress: StoriesModel.Progress(
-        lineSize: 3.0,           // Progress bar thickness
-        gap: 2.0,                // Gap between segments
-        viewedColor: .gray,       // Color for viewed segments
-        unviewedColor: .green,    // Color for unviewed segments
-        interItemSpacing: 4.0,    // Spacing between progress bars
-        containerPadding: 16.0    // Container padding
+        lineSize: 3.0,
+        interItemSpacing: 4.0,
+        containerPadding: .init(top: 4, leading: 0, bottom: 0, trailing: 0),
+        viewedColor: .gray.opacity(0.6),
+        unviewedColor: .green
     ),
-    avatar: StoriesModel.Avatar(
-        size: 60.0,              // Avatar size
-        padding: 8.0,             // Internal padding
-        progressPadding: 4.0      // Padding around progress circle
-    ),
-    userName: StoriesModel.Text(
-        font: .systemFont(ofSize: 16, weight: .medium),
-        color: .white,
-        lineLimit: 1,
-        padding: 8.0,
-        spacingFromAvatar: 8.0,
-        multilineTextAlignment: .center
+    user: StoriesModel.UserModel(
+        avatar: StoriesModel.Avatar(size: 30),
+        userName: StoriesModel.Text(font: .system(size: 12, weight: .bold)),
+        date: StoriesModel.Text(
+            font: .system(size: 10, weight: .semibold),
+            color: .white.opacity(0.8)
+        )
     )
 )
 ```
@@ -181,8 +159,8 @@ Represents a group of stories (e.g., stories from one user):
 StoriesGroupModel(
     id: "unique_id",
     title: "Group Title",
-    avatarImage: .url(URL(string: "avatar_url")!),
-    stories: [/* array of stories */]
+    avatarImage: .remote("https://example.com/avatar.jpg"),
+    pages: [/* array of StoriesPageModel */]
 )
 ```
 
@@ -194,7 +172,7 @@ Individual story page with support for images, videos, and custom content:
 StoriesPageModel(
     date: "Today",
     mediaSource: StoriesMediaModel(
-        media: .image(.url(URL(string: "image_url")!))
+        media: .image(.remote("https://example.com/image.jpg"))
     ),
     duration: 4.0,
     padding: EdgeInsets(top: 54, leading: 0, bottom: 44, trailing: 0),
@@ -238,7 +216,7 @@ StoriesPageModel(
 StoriesPageModel(
     date: "Yesterday",
     mediaSource: StoriesMediaModel(
-        media: .video(.url(URL(string: "video_url")!))
+        media: .video(.remote("https://example.com/video.mp4"))
     ),
     duration: 8.0,
     padding: EdgeInsets(top: 54, leading: 0, bottom: 44, trailing: 0),
@@ -252,12 +230,14 @@ Model for media (images and videos) with support for various sources:
 ```swift
 // Image media
 StoriesMediaModel(
-    media: .image(.url(URL(string: "image_url")!)) // or .image(UIImage)
+    media: .image(.remote("https://example.com/image.jpg")) // String?
+    // media: .image(.remote(optionalURL))                  // URL?
+    // media: .image(.local(UIImage))
 )
 
 // Video media
 StoriesMediaModel(
-    media: .video(.url(URL(string: "video_url")!)) // or .video(AVAsset)
+    media: .video(.remote("https://example.com/video.mp4"))
 )
 
 // Local video
@@ -276,51 +256,33 @@ StoriesKit includes an advanced video player with:
 - **Smooth Transitions** - Seamless switching between videos
 - **Memory Efficient** - Single player instance reused across all videos
 
-### Delegate
+### Events
 
-Implement the `IStoriesDelegate` protocol to handle events:
+Handle user actions via `StoriesStateManager.Event`:
 
 ```swift
-extension YourViewController: IStoriesDelegate {
-    func didClose() {
-        // Story closed
-    }
-    
-    func didOpenLink(url: URL) {
-        // Open link
-        UIApplication.shared.open(url)
-    }
-    
-    func didOpenStory(storyId: String) {
-        // Open specific story
+.onChange(of: stateManager.state.event) { event in
+    guard let event else { return }
+
+    switch event {
+    case let .didOpenLink(urlString):
+        if let url = URL(string: urlString) {
+            openURL(url)
+        }
+    case .didToggleGroup, .didSwitchGroup, .didViewPage:
+        break
     }
 }
 ```
 
-### Button Types
+Custom story content can emit link events via `@Environment(\.storiesStateManager)`:
 
 ```swift
-// Next button
-.actionType = .next
+@Environment(\.storiesStateManager) private var stateManager
 
-// Close button
-.actionType = .close
-
-// Link button
-.actionType = .link(URL(string: "https://example.com")!)
-```
-
-### Button Corner Styles
-
-```swift
-// No rounding
-.corners = .none
-
-// Circular button
-.corners = .circle
-
-// Custom rounding
-.corners = .radius(12)
+Button("Learn More") {
+    stateManager?.send(.didOpenLink("https://example.com"))
+}
 ```
 
 ### StoriesCarouselView Configuration
@@ -374,7 +336,7 @@ Buttons are now integrated directly into custom content views:
 StoriesPageModel(
     date: "Today",
     mediaSource: StoriesMediaModel(
-        media: .image(.url(URL(string: "background_url")!))
+        media: .image(.remote("https://example.com/background.jpg"))
     ),
     content: AnyView(
         VStack(spacing: 0) {
@@ -424,7 +386,7 @@ let videoStories = [
         subtitle: AttributedString("Check out this cool content"),
         backgroundColor: .black,
         mediaSource: StoriesMediaModel(
-            media: .video(.url(URL(string: "https://example.com/video.mp4")!))
+            media: .video(.remote("https://example.com/video.mp4"))
         ),
         content: AnyView(
             VStack {
@@ -449,7 +411,7 @@ let mixedStories = [
     StoriesPageModel(
         title: AttributedString("Photo Story"),
         mediaSource: StoriesMediaModel(
-            media: .image(.url(URL(string: "https://example.com/photo.jpg")!))
+            media: .image(.remote("https://example.com/photo.jpg"))
         ),
         duration: 4.0
     ),
@@ -457,7 +419,7 @@ let mixedStories = [
     StoriesPageModel(
         title: AttributedString("Video Story"),
         mediaSource: StoriesMediaModel(
-            media: .video(.url(URL(string: "https://example.com/video.mp4")!))
+            media: .video(.remote("https://example.com/video.mp4"))
         ),
         duration: 8.0
     )
@@ -466,127 +428,11 @@ let mixedStories = [
 
 ## 🚀 Integration Examples
 
-### UIKit - Embedding in Existing Controller
+### UIKit + SwiftUI Carousel
 
-```swift
-import StoriesKit
-import UIKit
+Use `StoriesStateManager` as the single source of truth. Embed the carousel and present the viewer from SwiftUI (see [Quick Start](#-quick-start)). For UIKit hosts, wrap the SwiftUI presentation view in `UIHostingController` and observe `stateManager.state.event` for links and analytics.
 
-class MainViewController: UIViewController {
-    private let storiesContainerView = UIView()
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupUI()
-        setupStories()
-    }
-    
-    private func setupUI() {
-        view.addSubview(storiesContainerView)
-        storiesContainerView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            storiesContainerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            storiesContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            storiesContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            storiesContainerView.heightAnchor.constraint(equalToConstant: 300)
-        ])
-    }
-    
-    private func setupStories() {
-        let stories: [StoriesPageModel] = [
-            .init(
-                title: pageTitle("Welcome to Stories"),
-                subtitle: pageSubtitle("Discover amazing content\nand share your moments\nwith the world!"),
-                backgroundColor: .systemBlue,
-                button: .init(
-                    title: actionButtonTitle("Next"),
-                    backgroundColor: .white,
-                    corners: .radius(12),
-                    actionType: .next
-                ),
-                backgroundImage: .init(image: .image(UIImage(named: "story1")))
-            ),
-            .init(
-                title: pageTitle("Interactive Features"),
-                subtitle: pageSubtitle("Tap to navigate, swipe to change\nstories, and enjoy smooth\ntransitions between content."),
-                backgroundColor: .systemPurple,
-                button: .init(
-                    title: actionButtonTitle("Got it"),
-                    backgroundColor: .white,
-                    corners: .radius(12),
-                    actionType: .close
-                ),
-                backgroundImage: .init(image: .image(UIImage(named: "story2")))
-            )
-        ]
-
-        let storiesViewController = Stories.build(
-            groups: [
-                .init(
-                    id: UUID().uuidString,
-                    title: "",
-                    avatarImage: .image(nil),
-                    stories: stories
-                )
-            ],
-            delegate: self
-        )
-        
-        // Add as child controller
-        addChild(storiesViewController)
-        storiesContainerView.addSubview(storiesViewController.view)
-        
-        // Setup Auto Layout
-        storiesViewController.view.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            storiesViewController.view.topAnchor.constraint(equalTo: storiesContainerView.topAnchor),
-            storiesViewController.view.leadingAnchor.constraint(equalTo: storiesContainerView.leadingAnchor),
-            storiesViewController.view.trailingAnchor.constraint(equalTo: storiesContainerView.trailingAnchor),
-            storiesViewController.view.bottomAnchor.constraint(equalTo: storiesContainerView.bottomAnchor)
-        ])
-        
-        storiesViewController.didMove(toParent: self)
-    }
-    
-    // MARK: - Helper Methods
-    
-    private func pageTitle(_ text: String) -> AttributedString {
-        var attributedString = AttributedString(text)
-        attributedString.font = .systemFont(ofSize: 24, weight: .bold)
-        attributedString.foregroundColor = .white
-        return attributedString
-    }
-    
-    private func pageSubtitle(_ text: String) -> AttributedString {
-        var attributedString = AttributedString(text)
-        attributedString.font = .systemFont(ofSize: 16, weight: .medium)
-        attributedString.foregroundColor = .white.opacity(0.9)
-        return attributedString
-    }
-    
-    private func actionButtonTitle(_ text: String) -> AttributedString {
-        var attributedString = AttributedString(text)
-        attributedString.font = .systemFont(ofSize: 16, weight: .semibold)
-        attributedString.foregroundColor = .black
-        return attributedString
-    }
-}
-
-// MARK: - IStoriesDelegate
-extension MainViewController: IStoriesDelegate {
-    func didClose() {
-        print("Stories closed")
-    }
-    
-    func didOpenLink(url: URL) {
-        UIApplication.shared.open(url)
-    }
-    
-    func didOpenStory(storyId: String) {
-        print("Opened story: \(storyId)")
-    }
-}
-```
+See the included **StoriesExample** app for a full carousel + overlay integration.
 
 ## 🎨 Customization
 
@@ -611,7 +457,7 @@ StoriesKit is built on modern architecture using:
 - **SwiftUI** — for UI components
 - **Combine** — for reactive programming
 - **MVVM** — architectural pattern
-- **Kingfisher** — for image loading and caching
+- **Nuke / NukeUI** — for image loading and caching
 - **AVFoundation** — for video playback
 
 ### Main Components
@@ -619,7 +465,7 @@ StoriesKit is built on modern architecture using:
 - `Stories` — main class for creating stories
 - `StoriesModel` — centralized configuration model
 - `StoriesStateManager` — centralized state management
-- `VideoPlayerStateManager` — video player state management
+- `StoriesVideoManager` — per-session video playback
 - `ContainerView` — SwiftUI container for stories
 - `ContentView` — main content with navigation
 - `PageView` — individual story page
@@ -633,8 +479,8 @@ StoriesKit is built on modern architecture using:
 
 - `ViewEvent` — user events (taps, swipes, timers)
 - `ViewState` — current state (groups, progress, indices)
-- `IStoriesDelegate` — protocol for event handling
-- `VideoPlayerState` — video player states (idle, playing, paused)
+- `StoriesStateManager.Event` — events for links, navigation, and viewed state
+- `StoriesVideoManager.State` — video playback states (idle, playing, paused)
 
 ### State Management
 
@@ -645,13 +491,13 @@ StoriesKit is built on modern architecture using:
 
 ## 📱 Requirements
 
-- iOS 15.0+
+- iOS 16.0+
 - Swift 5.9+
 - Xcode 15.0+
 
 ## 🔧 Dependencies
 
-- [Kingfisher](https://github.com/onevcat/Kingfisher) — for image loading
+- [Nuke](https://github.com/kean/Nuke) — for image loading (`NukeUI`)
 
 ## 📄 License
 
@@ -660,6 +506,21 @@ StoriesKit is distributed under the MIT license. See the [LICENSE](LICENSE) file
 ## 🤝 Contributing
 
 We welcome contributions to StoriesKit! Please read our [contributing guidelines](CONTRIBUTING.md).
+
+### Development
+
+```bash
+# Install git hooks (SwiftLint on commit)
+./Scripts/install-git-hooks.sh
+
+# Run unit tests (iOS Simulator)
+./Scripts/run-tests.sh
+
+# Lint
+./Scripts/run-swiftlint.sh lint
+```
+
+CI runs tests and SwiftLint on every push to `main` via GitHub Actions.
 
 ## 🆕 What's New
 

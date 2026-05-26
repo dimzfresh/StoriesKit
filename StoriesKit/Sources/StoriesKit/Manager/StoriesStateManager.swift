@@ -3,15 +3,18 @@ import Foundation
 import SwiftUI
 
 /// State manager for Stories coordination and state management
+@MainActor
 public final class StoriesStateManager: ObservableObject {
     @Published public private(set) var state: State = .default
-    let model: StoriesModel
+    public let model: StoriesModel
+    public let videoManager: StoriesVideoManager
 
     public init(model: StoriesModel) {
         self.model = model
-        state.groups = model.groups
+        self.videoManager = StoriesVideoManager()
+        state.groups = StoriesGroupModel.sortedForDisplay(model.groups)
     }
-    
+
     /// Send event to state manager
     public func send(_ event: Event) {
         switch event {
@@ -29,33 +32,36 @@ public final class StoriesStateManager: ObservableObject {
                     }
                 }
 
-                await try? Task.sleep(UInt64(0.3 * Double(NSEC_PER_SEC)))
+                try? await Task.sleep(nanoseconds: 300_000_000)
 
-                let firstGroups = state.groups.filter { $0.pages.contains(where: { !$0.isViewed }) }.sorted { $0.id < $1.id }
-                let viewedGroups = state.groups.filter { $0.pages.allSatisfy(\.isViewed) }.sorted { $0.id < $1.id }
-                state.groups = firstGroups + viewedGroups
+                state.groups = StoriesGroupModel.sortedForDisplay(state.groups)
             }
         case let .didSwitchGroup(groupId):
             state.event = event
             state.selectedGroupId = groupId
-        case let .didOpenLink(url):
+        case .didOpenLink:
             state.event = event
         case let .didViewPage(groupId, pageId):
-            markPageAsViewed(groupId: groupId, pageId: pageId)
+            guard markPageAsViewed(groupId: groupId, pageId: pageId) else { return }
 
             state.event = event
             state.selectedGroupId = groupId
         }
     }
 
-    private func markPageAsViewed(groupId: String, pageId: String) {
+    @discardableResult
+    private func markPageAsViewed(groupId: String, pageId: String) -> Bool {
         guard let groupIndex = state.groups.firstIndex(where: { $0.id == groupId }),
-              let pageIndex = state.groups[groupIndex].pages.firstIndex(where: { $0.id == pageId }) else { return }
+              let pageIndex = state.groups[groupIndex].pages.firstIndex(where: { $0.id == pageId }) else {
+            return false
+        }
+
+        let page = state.groups[groupIndex].pages[pageIndex]
+        guard !page.isViewed else { return false }
 
         var groups = state.groups
         var pages = groups[groupIndex].pages
 
-        let page = pages[pageIndex]
         pages[pageIndex] = page.updateViewed(true)
         let group = groups[groupIndex]
 
@@ -67,6 +73,7 @@ public final class StoriesStateManager: ObservableObject {
         )
 
         state.groups = groups
+        return true
     }
 
     public enum Event: Hashable {

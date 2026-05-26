@@ -3,8 +3,7 @@ import SwiftUI
 
 extension Stories {
     /// State model for Stories view
-    struct ViewState: Identifiable, Hashable {
-        let id = UUID()
+    struct ViewState: Hashable {
         let groups: [StoriesGroupModel]
         let progressBar: ProgressBar
         let current: Current?
@@ -22,14 +21,12 @@ extension Stories {
             self.isPaused = isPaused
         }
 
-        struct ProgressBar: Identifiable, Hashable {
-            let id = UUID()
+        struct ProgressBar: Hashable {
             let progress: CGFloat
             let duration: TimeInterval
         }
 
-        struct Current: Identifiable, Hashable {
-            let id = UUID()
+        struct Current: Hashable {
             let selectedGroup: StoriesGroupModel
             let activePages: [String: StoriesPageModel]
         }

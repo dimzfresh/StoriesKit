@@ -3,6 +3,7 @@ import SwiftUI
 
 extension Stories {
     /// UIKit view controller for presenting Stories
+    @MainActor
     final class ViewController: AnyHostingController {
         init(
             viewModel: ViewModel,
@@ -14,7 +15,7 @@ extension Stories {
             ))
             setupView()
         }
-        
+
         @available(*, unavailable)
         required init?(coder: NSCoder) {
             fatalError("init(coder:) has not been implemented")

@@ -3,27 +3,27 @@ import PackageDescription
 
 let package = Package(
   name: "StoriesKit",
-  platforms: [.iOS(.v15)],
+  platforms: [.iOS(.v16)],
   products: [
     .library(
       name: "StoriesKit",
+      type: .dynamic,
       targets: ["StoriesKit"]
-    ),
-    .executable(
-      name: "Example",
-      targets: ["Example"]
     )
   ],
   dependencies: [
-    .package(url: "https://github.com/onevcat/Kingfisher.git", .upToNextMajor(from: "7.11.0"))
+    .package(url: "https://github.com/kean/Nuke.git", from: "12.0.0")
   ],
   targets: [
     .target(
       name: "StoriesKit",
-      dependencies: ["Kingfisher"]
+      dependencies: [
+        .product(name: "Nuke", package: "Nuke"),
+        .product(name: "NukeUI", package: "Nuke")
+      ]
     ),
-    .executableTarget(
-      name: "Example",
+    .testTarget(
+      name: "StoriesKitTests",
       dependencies: ["StoriesKit"]
     )
   ]

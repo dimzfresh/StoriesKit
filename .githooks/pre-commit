@@ -1,0 +1,34 @@
+#!/bin/bash
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+if command -v swiftlint >/dev/null 2>&1; then
+  SWIFTLINT="swiftlint"
+elif [ -x "${HOME}/.mint/bin/swiftlint" ]; then
+  SWIFTLINT="${HOME}/.mint/bin/swiftlint"
+else
+  echo "pre-commit: SwiftLint not found."
+  echo "Install: brew install swiftlint  (or: mint bootstrap)"
+  exit 1
+fi
+
+mapfile -t STAGED_SWIFT < <(
+  git diff --cached --name-only --diff-filter=ACMR | grep '\.swift$' || true
+)
+
+if ((${#STAGED_SWIFT[@]} == 0)); then
+  exit 0
+fi
+
+echo "pre-commit: SwiftLint (${#STAGED_SWIFT[@]} file(s))"
+
+for file in "${STAGED_SWIFT[@]}"; do
+  if [[ -f "$file" ]]; then
+    "$SWIFTLINT" --fix --quiet "$file"
+    git add "$file"
+  fi
+done
+
+"$SWIFTLINT" lint --quiet "${STAGED_SWIFT[@]}"

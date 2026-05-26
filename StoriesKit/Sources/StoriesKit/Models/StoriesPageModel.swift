@@ -17,7 +17,7 @@ public struct StoriesPageModel: Hashable {
         date: String,
         mediaSource: StoriesMediaModel,
         isViewed: Bool = false,
-        duration: TimeInterval = 5.0,
+        duration: TimeInterval = 7.0,
         padding: EdgeInsets = .init(top: 54, leading: 0, bottom: 44, trailing: 0),
         cornerRadius: CGFloat = 12,
         content: AnyView? = nil
@@ -39,6 +39,8 @@ public struct StoriesPageModel: Hashable {
             mediaSource: mediaSource,
             isViewed: isViewed,
             duration: duration,
+            padding: padding,
+            cornerRadius: cornerRadius,
             content: content
         )
     }

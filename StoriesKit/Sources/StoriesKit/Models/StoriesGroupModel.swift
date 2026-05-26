@@ -9,6 +9,11 @@ public struct StoriesGroupModel: Hashable, Identifiable {
     public let placeholder: UIImage?
     public let pages: [StoriesPageModel]
 
+    /// `true` when every page in the group is marked viewed (including an empty group).
+    public var isFullyViewed: Bool {
+        pages.allSatisfy(\.isViewed)
+    }
+
     public init(
         id: String,
         title: String,
@@ -21,5 +26,15 @@ public struct StoriesGroupModel: Hashable, Identifiable {
         self.avatarImage = avatarImage
         self.placeholder = placeholder
         self.pages = pages
+    }
+
+    /// Groups with unviewed pages first, then fully viewed; ties broken by `id`.
+    public static func sortedForDisplay(_ groups: [StoriesGroupModel]) -> [StoriesGroupModel] {
+        groups.sorted { lhs, rhs in
+            if lhs.isFullyViewed != rhs.isFullyViewed {
+                return !lhs.isFullyViewed
+            }
+            return lhs.id < rhs.id
+        }
     }
 }

@@ -5,10 +5,10 @@ import UIKit
 public struct StoriesModel {
     /// Array of story groups
     public let groups: [StoriesGroupModel]
-    
+
     /// Background color for the stories view
     public let backgroundColor: Color
-    
+
     /// Progress indicator configuration
     public let progress: StoriesModel.Progress
 

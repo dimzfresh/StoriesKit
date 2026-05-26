@@ -91,7 +91,7 @@ struct CarouselItemView: View {
     }
 
     private func createCustomSegments(for group: StoriesGroupModel) -> [SegmentedView.Segment] {
-        if group.pages.allSatisfy(\.isViewed) {
+        if group.isFullyViewed {
             [
                 .init(
                     color: configuration.progress.viewedColor,
@@ -114,7 +114,7 @@ struct CarouselItemView: View {
             }
         }
     }
-    
+
     private func handleTap() {
         stateManager.send(.didToggleGroup(group.id))
     }
