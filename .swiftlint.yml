@@ -1,0 +1,46 @@
+included:
+  paths:
+    - StoriesKit/Sources/StoriesKit
+    - StoriesKit/Sources/Example/StoriesExample
+    - StoriesKit/Tests
+
+excluded:
+  paths:
+    - StoriesKit/.build
+    - StoriesKit/.swiftpm
+    - StoriesKit/.build/**/*
+
+line_length:
+  warning: 140
+  error: 200
+  ignores_urls: true
+  ignores_function_declarations: true
+
+file_length:
+  warning: 500
+  error: 800
+
+type_body_length:
+  warning: 450
+  error: 700
+
+function_parameter_count:
+  warning: 6
+  error: 8
+
+nesting:
+  type_level:
+    warning: 2
+
+identifier_name:
+  min_length:
+    warning: 2
+  excluded:
+    - id
+    - x
+    - y
+
+trailing_whitespace:
+  severity: error
+
+reporter: emoji

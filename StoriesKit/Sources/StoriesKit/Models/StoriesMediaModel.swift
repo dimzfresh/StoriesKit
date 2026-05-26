@@ -28,12 +28,22 @@ public struct StoriesMediaModel: Hashable {
 
         public enum ImageType: Hashable {
             case local(UIImage)
-            case remote(URL)
+            case remote(URL?)
+
+            /// Remote image from an optional URL string. Invalid or missing strings resolve to `nil`.
+            public static func remote(_ urlString: String?) -> Self {
+                .remote(urlString.flatMap(URL.init(string:)))
+            }
         }
 
         public enum VideoType: Hashable {
             case local(AVAsset)
-            case remote(URL)
+            case remote(URL?)
+
+            /// Remote video from an optional URL string. Invalid or missing strings resolve to `nil`.
+            public static func remote(_ urlString: String?) -> Self {
+                .remote(urlString.flatMap(URL.init(string:)))
+            }
         }
     }
 }

@@ -128,7 +128,7 @@ public struct StoriesCarouselConfiguration {
 
         /// Horizontal padding for the carousel
         public let horizontalPadding: CGFloat
-        
+
         /// Corner style for carousel items
         public let corners: CornerStyle
 
@@ -143,7 +143,7 @@ public struct StoriesCarouselConfiguration {
         }
 
         public static let `default` = Self()
-        
+
         /// Corner style options for carousel items
         public enum CornerStyle: Hashable {
             case circle

@@ -3,138 +3,253 @@ import AVFoundation
 import AVKit
 import Combine
 
-public struct VideoPlayerRepresentable: UIViewControllerRepresentable {
-    private let videoSource: StoriesMediaModel.MediaSource.VideoType
-    private let isMuted: Bool
-    private let shouldLoop: Bool
-    private let onPlaybackEnd: (() -> Void)?
-    private let stateManager: VideoPlayerStateManager
-    private let playerBinding: Binding<AVPlayer?>?
-    
-    public init(
-        videoSource: StoriesMediaModel.MediaSource.VideoType,
-        isMuted: Bool = false,
-        shouldLoop: Bool = true,
-        onPlaybackEnd: (() -> Void)? = nil,
-        stateManager: VideoPlayerStateManager = .shared,
-        playerBinding: Binding<AVPlayer?>? = nil
-    ) {
-        self.videoSource = videoSource
-        self.isMuted = isMuted
-        self.shouldLoop = shouldLoop
-        self.onPlaybackEnd = onPlaybackEnd
-        self.stateManager = stateManager
-        self.playerBinding = playerBinding
-    }
-    
-    public func makeUIViewController(context: Context) -> UIViewController {
+struct VideoPlayerRepresentable: UIViewControllerRepresentable {
+    let videoSource: StoriesMediaModel.MediaSource.VideoType
+    let videoManager: StoriesVideoManager
+    let isMuted: Bool
+    let shouldLoop: Bool
+    let isActive: Bool
+    let playbackState: StoriesVideoManager.State
+    let managerGeneration: Int
+    let onPlaybackEnd: (() -> Void)?
+
+    func makeUIViewController(context: Context) -> UIViewController {
         let controller = UIViewController()
-        controller.modalTransitionStyle = .crossDissolve
-        
-        let playerItem: AVPlayerItem
-        switch videoSource {
-        case let .local(asset):
-            playerItem = .init(asset: asset)
-        case let .remote(url):
-            playerItem = .init(url: url)
-        }
-        
+        controller.view.backgroundColor = .clear
+
+        guard let playerItem = makePlayerItem(for: videoSource) else { return controller }
+
         playerItem.preferredForwardBufferDuration = 0.5
-        
+
         let player = AVPlayer(playerItem: playerItem)
         player.isMuted = isMuted
         player.automaticallyWaitsToMinimizeStalling = false
-        
+
         let playerLayer = AVPlayerLayer(player: player)
         playerLayer.videoGravity = .resizeAspectFill
         playerLayer.frame = controller.view.bounds
-        
         controller.view.layer.addSublayer(playerLayer)
-        controller.view.backgroundColor = .clear
-        
-        context.coordinator.player = player
-        context.coordinator.playerLayer = playerLayer
-        
-        Task { @MainActor in
-            playerBinding?.wrappedValue = player
-        }
-        
-        player.play()
-        stateManager.setPlaying()
-        
+
+        context.coordinator.configure(
+            player: player,
+            playerItem: playerItem,
+            playerLayer: playerLayer,
+            generation: managerGeneration,
+            videoManager: videoManager
+        )
+
         return controller
     }
-    
-    public func updateUIViewController(
+
+    func updateUIViewController(
         _ uiViewController: UIViewController,
         context: Context
     ) {
-        if let playerLayer = context.coordinator.playerLayer {
-            playerLayer.frame = uiViewController.view.bounds
+        context.coordinator.playerLayer?.frame = uiViewController.view.bounds
+        context.coordinator.updatePlayback(
+            isActive: isActive,
+            playbackState: playbackState,
+            managerGeneration: managerGeneration
+        )
+    }
+
+    static func dismantleUIViewController(
+        _ uiViewController: UIViewController,
+        coordinator: Coordinator
+    ) {
+        coordinator.teardown()
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(shouldLoop: shouldLoop, onPlaybackEnd: onPlaybackEnd)
+    }
+
+    private func makePlayerItem(for source: StoriesMediaModel.MediaSource.VideoType) -> AVPlayerItem? {
+        switch source {
+        case let .local(asset):
+            return AVPlayerItem(asset: asset)
+        case let .remote(url):
+            guard let url else { return nil }
+            return AVPlayerItem(url: url)
         }
     }
-    
-    public func makeCoordinator() -> Coordinator {
-        .init(self)
-    }
-    
-    public class Coordinator: NSObject {
-        private let parent: VideoPlayerRepresentable
-        var player: AVPlayer?
-        var playerLayer: AVPlayerLayer?
-        
-        init(_ parent: VideoPlayerRepresentable) {
-            self.parent = parent
+
+    @MainActor
+    final class Coordinator: NSObject {
+        private let shouldLoop: Bool
+        private let onPlaybackEnd: (() -> Void)?
+
+        private var videoManager: StoriesVideoManager?
+        private var player: AVPlayer?
+        private var playerItem: AVPlayerItem?
+        fileprivate var playerLayer: AVPlayerLayer?
+        private var timeObserver: Any?
+        private var statusObservation: NSKeyValueObservation?
+        private var subscriptions = Set<AnyCancellable>()
+        private var generation = 0
+        private var isActive = false
+
+        init(
+            shouldLoop: Bool,
+            onPlaybackEnd: (() -> Void)?
+        ) {
+            self.shouldLoop = shouldLoop
+            self.onPlaybackEnd = onPlaybackEnd
             super.init()
+        }
+
+        func configure(
+            player: AVPlayer,
+            playerItem: AVPlayerItem,
+            playerLayer: AVPlayerLayer,
+            generation: Int,
+            videoManager: StoriesVideoManager
+        ) {
+            teardown()
+
+            self.player = player
+            self.playerItem = playerItem
+            self.playerLayer = playerLayer
+            self.generation = generation
+            self.videoManager = videoManager
+
+            observeDuration(playerItem: playerItem)
+            observeProgress(player: player, playerItem: playerItem)
+            observePlaybackEnd(player: player, playerItem: playerItem)
+        }
+
+        func updatePlayback(
+            isActive: Bool,
+            playbackState: StoriesVideoManager.State,
+            managerGeneration: Int
+        ) {
+            self.isActive = isActive
+            applyPlayback(playbackState: playbackState, managerGeneration: managerGeneration)
+        }
+
+        func teardown() {
+            subscriptions.removeAll()
+
+            if let timeObserver, let player {
+                player.removeTimeObserver(timeObserver)
+            }
+            timeObserver = nil
+
+            statusObservation?.invalidate()
+            statusObservation = nil
+
+            player?.pause()
+            player?.replaceCurrentItem(with: nil)
+            player = nil
+            playerItem = nil
+            playerLayer = nil
+            videoManager = nil
+        }
+
+        private func applyPlayback(
+            playbackState: StoriesVideoManager.State,
+            managerGeneration: Int
+        ) {
+            guard let player else { return }
+
+            guard isActive, generation == managerGeneration else {
+                player.pause()
+                return
+            }
+
+            switch playbackState {
+            case .playing:
+                player.play()
+            case .paused, .idle:
+                player.pause()
+            }
+        }
+
+        private func observeDuration(playerItem: AVPlayerItem) {
+            let report = { [weak self] in
+                guard let self, let videoManager else { return }
+                let seconds = playerItem.duration.seconds
+                Task { @MainActor in
+                    videoManager.reportDuration(seconds, generation: self.generation)
+                }
+            }
+
+            if playerItem.status == .readyToPlay {
+                report()
+            }
+
+            statusObservation = playerItem.observe(\.status, options: [.new]) { item, _ in
+                guard item.status == .readyToPlay else { return }
+                report()
+            }
+        }
+
+        private func observeProgress(player: AVPlayer, playerItem: AVPlayerItem) {
+            let interval = CMTime(seconds: 0.05, preferredTimescale: 600)
+            timeObserver = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
+                guard let self, let videoManager else { return }
+
+                let duration = playerItem.duration.seconds
+                guard duration.isFinite, duration > 0 else { return }
+
+                let progress = time.seconds / duration
+                Task { @MainActor in
+                    videoManager.reportProgress(CGFloat(progress), generation: self.generation)
+                }
+            }
+        }
+
+        private func observePlaybackEnd(player: AVPlayer, playerItem: AVPlayerItem) {
+            NotificationCenter.default.publisher(
+                for: .AVPlayerItemDidPlayToEndTime,
+                object: playerItem
+            )
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self, let videoManager else { return }
+
+                if shouldLoop {
+                    player.seek(to: .zero)
+                    player.play()
+
+                    Task { @MainActor in
+                        videoManager.reportProgress(
+                            0,
+                            generation: self.generation
+                        )
+                    }
+                } else {
+                    Task { @MainActor in
+                        videoManager.reportEnded(generation: self.generation)
+                        self.onPlaybackEnd?()
+                    }
+                }
+            }
+            .store(in: &subscriptions)
         }
     }
 }
 
-public struct VideoPlayerView: View {
-    private let videoSource: StoriesMediaModel.MediaSource.VideoType
-    private let isMuted: Bool
-    private let shouldLoop: Bool
-    private let onPlaybackEnd: (() -> Void)?
-    private let stateManager: VideoPlayerStateManager
-    
-    @State private var player: AVPlayer?
-    
-    public init(
-        videoSource: StoriesMediaModel.MediaSource.VideoType,
-        isMuted: Bool = false,
-        shouldLoop: Bool = true,
-        onPlaybackEnd: (() -> Void)? = nil,
-        stateManager: VideoPlayerStateManager = .shared
-    ) {
-        self.videoSource = videoSource
-        self.isMuted = isMuted
-        self.shouldLoop = shouldLoop
-        self.onPlaybackEnd = onPlaybackEnd
-        self.stateManager = stateManager
-    }
-    
-    public var body: some View {
+struct VideoPlayerView: View {
+    @ObservedObject var videoManager: StoriesVideoManager
+
+    let videoSource: StoriesMediaModel.MediaSource.VideoType
+    let isMuted: Bool
+    let shouldLoop: Bool
+    let isActive: Bool
+    let onPlaybackEnd: (() -> Void)?
+
+    var body: some View {
         VideoPlayerRepresentable(
             videoSource: videoSource,
+            videoManager: videoManager,
             isMuted: isMuted,
             shouldLoop: shouldLoop,
-            onPlaybackEnd: onPlaybackEnd,
-            stateManager: stateManager,
-            playerBinding: $player
+            isActive: isActive,
+            playbackState: videoManager.state,
+            managerGeneration: videoManager.generation,
+            onPlaybackEnd: onPlaybackEnd
         )
         .transition(.opacity.animation(.easeInOut(duration: 0.2)))
-        .onReceive(stateManager.$currentState) { state in
-            switch state {
-            case .playing:
-                player?.play()
-            case .paused:
-                player?.pause()
-            case .idle:
-                player?.pause()
-            }
-        }
-        .onDisappear {
-            player?.pause()
-        }
     }
 }

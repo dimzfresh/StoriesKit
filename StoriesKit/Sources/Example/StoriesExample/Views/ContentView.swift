@@ -1,16 +1,12 @@
-import Kingfisher
 import SwiftUI
 import StoriesKit
 
 struct ContentView: View {
     @StateObject private var stateManager: StoriesStateManager
+    @Environment(\.openURL) private var openURL
+
     private let randomImages = StoriesFactory.makeRandomImages()
     @Namespace private var avatarNamespace
-
-    init() {
-        let model = StoriesModel(groups: StoriesFactory.makeStoriesGroups())
-        _stateManager = .init(wrappedValue: .init(model: model))
-    }
 
     var body: some View {
         ZStack {
@@ -23,8 +19,11 @@ struct ContentView: View {
             }
             .padding(.top, 20)
         }
-        .background(Color(red: 0.08, green: 0.08, blue: 0.08))
+        .background(DemoTheme.background)
         .preferredColorScheme(.dark)
+        .onChange(of: stateManager.state.event) { event in
+            handleStoriesEvent(event)
+        }
         .overlay {
             if stateManager.state.isShown {
                 Stories.build(
@@ -36,17 +35,21 @@ struct ContentView: View {
         }
     }
 
+    init() {
+        _stateManager = .init(wrappedValue: .init(model: StoriesFactory.makeStoriesModel()))
+    }
+
     private var storiesCarouselView: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
                 Image(systemName: "music.mic")
-                    .foregroundColor(.white.opacity(0.8))
+                    .foregroundColor(DemoTheme.sectionIcon)
                     .font(.title3)
 
                 Text("Artist Stories")
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundColor(.white.opacity(0.9))
+                    .foregroundColor(DemoTheme.sectionTitle)
 
                 Spacer()
             }
@@ -57,13 +60,13 @@ struct ContentView: View {
                 avatarNamespace: avatarNamespace,
                 configuration: StoriesCarouselConfiguration(
                     layout: StoriesCarouselConfiguration.Layout(
-                        corners: .radius(12)  // Rounded rectangle with 12pt radius
+                        corners: .radius(12)
                     )
                 )
             )
         }
         .padding(.vertical, 16)
-        .background(Color(red: 0.08, green: 0.08, blue: 0.08))
+        .background(DemoTheme.background)
         .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
     }
 
@@ -71,13 +74,13 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 8) {
                 Image(systemName: "photo.on.rectangle.angled")
-                    .foregroundColor(.white.opacity(0.8))
+                    .foregroundColor(DemoTheme.sectionIcon)
                     .font(.title3)
 
                 Text("Featured Images")
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundColor(.white.opacity(0.9))
+                    .foregroundColor(DemoTheme.sectionTitle)
 
                 Spacer()
             }
@@ -89,18 +92,32 @@ struct ContentView: View {
                         .fill(.clear)
                         .frame(height: 200)
                         .overlay {
-                            KFImage(URL(string: randomImages[index]))
-                                .resizable()
-                                .scaledToFill()
-                                .frame(height: 200)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                            StoriesMediaView(
+                                mediaModel: .init(media: .image(.remote(randomImages[index]))),
+                                placeholder: { DemoTheme.imagePlaceholder },
+                                failure: { DemoTheme.imagePlaceholder }
+                            )
+                            .frame(height: 200)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                         .clipped()
                         .padding(.horizontal, 16)
                 }
             }
         }
-        .background(Color(red: 0.08, green: 0.08, blue: 0.08))
+        .background(DemoTheme.background)
         .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+    }
+
+    private func handleStoriesEvent(_ event: StoriesStateManager.Event?) {
+        guard let event else { return }
+
+        switch event {
+        case let .didOpenLink(urlString):
+            guard let url = URL(string: urlString) else { return }
+            openURL(url)
+        case .didToggleGroup, .didSwitchGroup, .didViewPage:
+            break
+        }
     }
 }

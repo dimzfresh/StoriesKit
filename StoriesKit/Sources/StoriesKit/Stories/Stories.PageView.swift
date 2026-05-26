@@ -1,4 +1,3 @@
-import Kingfisher
 import SwiftUI
 
 extension Stories {
@@ -7,6 +6,7 @@ extension Stories {
         let currentPage: StoriesPageModel?
         let verticalOffset: CGFloat
         let progressBars: [ViewState.ProgressBar]
+        let progressModel: StoriesProgressModel
         let isCurrentGroup: Bool
         let avatarNamespace: Namespace.ID
         let stateManager: StoriesStateManager
@@ -33,12 +33,12 @@ extension Stories {
                     .rotation3DEffect(
                         getAngle(geometry: geometry),
                         axis: (x: 0, y: 1, z: 0),
-                        anchor: geometry.frame(in: .global).minX > 0 ? .leading : .trailing,
+                        anchor: rotationAnchor(geometry: geometry),
                         perspective: 2.0
                     )
-                    .ignoresSafeArea()
                 }
             }
+            .ignoresSafeArea()
         }
 
         private func storyPageView(_ model: StoriesPageModel) -> some SwiftUI.View {
@@ -47,6 +47,8 @@ extension Stories {
                     .overlay {
                         StoriesMediaView(
                             mediaModel: model.mediaSource,
+                            videoManager: stateManager.videoManager,
+                            isVideoActive: isCurrentGroup,
                             placeholder: {
                                 if let placeholder = model.mediaSource.placeholder {
                                     Image(uiImage: placeholder)
@@ -76,23 +78,37 @@ extension Stories {
         }
 
         private func progressBarsView() -> some SwiftUI.View {
-            HStack(spacing: stateManager.model.progress.interItemSpacing) {
-                ForEach(progressBars, id: \.self) { data in
-                    ProgressBarView(
-                        progress: data.progress,
-                        duration: data.duration,
-                        height: stateManager.model.progress.lineSize
+            Group {
+                if isCurrentGroup {
+                    StoriesLiveProgressBarsView(
+                        progressModel: progressModel,
+                        group: group,
+                        progressBars: progressBars,
+                        currentPage: currentPage,
+                        lineSize: stateManager.model.progress.lineSize,
+                        interItemSpacing: stateManager.model.progress.interItemSpacing,
+                        containerPadding: stateManager.model.progress.containerPadding
+                    )
+                } else {
+                    StoriesStaticProgressBarsView(
+                        progressBars: progressBars,
+                        lineSize: stateManager.model.progress.lineSize,
+                        interItemSpacing: stateManager.model.progress.interItemSpacing,
+                        containerPadding: stateManager.model.progress.containerPadding
                     )
                 }
             }
-            .padding(stateManager.model.progress.containerPadding)
         }
 
         private func getAngle(geometry: GeometryProxy) -> Angle {
-            let rotationAngle: CGFloat = Constants.rotationAngle
-            let progress = geometry.frame(in: .global).minX / geometry.size.width
-            let degrees = rotationAngle * progress
-            return Angle(degrees: degrees)
+            let width = max(geometry.size.width, 1)
+            let rawProgress = geometry.frame(in: .global).minX / width
+            let progress = min(max(rawProgress, -1), 1)
+            return Angle(degrees: Constants.rotationAngle * progress)
+        }
+
+        private func rotationAnchor(geometry: GeometryProxy) -> UnitPoint {
+            geometry.frame(in: .global).minX > 0 ? .leading : .trailing
         }
 
         private func getScaleEffect() -> CGFloat {

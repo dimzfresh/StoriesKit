@@ -32,33 +32,10 @@ extension Stories {
 
                 GeometryReader { geometry in
                     if isFirstAppearance, let group = viewModel.state.current?.selectedGroup {
-                        PageView(
-                            group: group,
-                            currentPage: getCurrentPageForGroup(group),
-                            verticalOffset: verticalDragOffset,
-                            progressBars: getProgressBarsForGroup(group),
-                            isCurrentGroup: viewModel.state.current?.selectedGroup.id == group.id,
-                            avatarNamespace: avatarNamespace,
-                            stateManager: viewModel.stateManager,
-                            onCloseAction: {
-                                Task {
-                                    withAnimation(.easeInOut(duration: Constants.animationDuration)) {
-                                        verticalDragOffset = UIScreen.main.bounds.height * 0.3
-                                    }
-
-                                    viewModel.send(.didDismiss)
-                                }
-                            },
-                            onTapPrevious: {
-                                viewModel.send(.didTapPrevious)
-                            },
-                            onTapNext: {
-                                viewModel.send(.didTapNext)
+                        groupView(group: group)
+                            .onFirstAppear {
+                                isFirstAppearance = false
                             }
-                        )
-                        .onFirstAppear {
-                            isFirstAppearance = false
-                        }
                     } else {
                         createScrollView(geometry: geometry)
                     }
@@ -79,47 +56,46 @@ extension Stories {
         }
 
         private func createScrollView(geometry: GeometryProxy) -> some SwiftUI.View {
-            ZStack {
-                ScrollViewReader { proxy in
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        LazyHStack(spacing: 0) {
-                            ForEach(viewModel.state.groups, id: \.id) { group in
-                                groupView(group: group)
-                                    .frame(
-                                        width: geometry.size.width,
-                                        height: geometry.size.height
-                                    )
-                                    .id(group.id)
-                            }
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(spacing: 0) {
+                        ForEach(viewModel.state.groups, id: \.id) { group in
+                            groupView(group: group)
+                                .frame(
+                                    width: geometry.size.width,
+                                    height: geometry.size.height
+                                )
+                                .id(group.id)
                         }
                     }
-                    .onFirstAppear {
-                        handleScrollViewAppear(proxy: proxy)
-                    }
-                    .onChange(of: viewModel.state.current) { current in
-                        guard let groupId = current?.selectedGroup.id else { return }
-
-                        handleCurrentChange(proxy: proxy, groupId: groupId)
-                    }
-                    .disabled(dragDirection == .vertical)
-                    .ignoresSafeArea()
-                    .offset(y: verticalDragOffset)
-                    .simultaneousGesture(createDragGesture(proxy: proxy))
-                    .onLongPressGesture(
-                        minimumDuration: Constants.longPressDuration,
-                        perform: {},
-                        onPressingChanged: handleLongPressChange
-                    )
                 }
+                .onFirstAppear {
+                    handleScrollViewAppear(proxy: proxy)
+                }
+                .onChange(of: viewModel.state.current) { current in
+                    guard let groupId = current?.selectedGroup.id else { return }
+
+                    handleCurrentChange(proxy: proxy, groupId: groupId)
+                }
+                .disabled(dragDirection == .vertical)
+                .ignoresSafeArea()
+                .offset(y: verticalDragOffset)
+                .simultaneousGesture(createDragGesture(proxy: proxy))
+                .onLongPressGesture(
+                    minimumDuration: Constants.longPressDuration,
+                    perform: {},
+                    onPressingChanged: handleLongPressChange
+                )
             }
         }
 
         private func groupView(group: StoriesGroupModel) -> some SwiftUI.View {
             PageView(
                 group: group,
-                currentPage: getCurrentPageForGroup(group),
+                currentPage: viewModel.currentPage(for: group),
                 verticalOffset: verticalDragOffset,
-                progressBars: getProgressBarsForGroup(group),
+                progressBars: viewModel.progressBars(for: group),
+                progressModel: viewModel.progressModel,
                 isCurrentGroup: viewModel.state.current?.selectedGroup.id == group.id,
                 avatarNamespace: avatarNamespace,
                 stateManager: viewModel.stateManager,
@@ -139,6 +115,7 @@ extension Stories {
                     viewModel.send(.didTapNext)
                 }
             )
+            .environment(\.storiesStateManager, viewModel.stateManager)
         }
 
         // MARK: - Vertical Swipe Handlers
@@ -157,52 +134,12 @@ extension Stories {
         ) {
             let threshold = UIScreen.main.bounds.height * Constants.verticalSwipeThreshold
             let dismissVelocity = Constants.dismissVelocity
-            let animationDuration = Constants.animationDuration
 
             if translation > threshold || velocity > dismissVelocity {
                 viewModel.send(.didDismiss)
             } else {
-                Task {
-                    withAnimation(.easeInOut(duration: Constants.returnAnimationDuration)) {
-                        verticalDragOffset = 0
-                    }
-                }
-            }
-        }
-
-        private func getCurrentPageForGroup(_ group: StoriesGroupModel) -> StoriesPageModel? {
-            if viewModel.state.current?.selectedGroup.id == group.id {
-                return viewModel.state.current?.activePages[group.id]
-            } else {
-                if let activePage = viewModel.state.current?.activePages[group.id] {
-                    return activePage
-                }
-                return group.pages.first { !$0.isViewed } ?? group.pages.first
-            }
-        }
-
-        private func getProgressBarsForGroup(_ group: StoriesGroupModel) -> [Stories.ViewState.ProgressBar] {
-            if group.id == viewModel.state.current?.selectedGroup.id {
-                return group.pages.map { page in
-                    let isCurrent = page.id == viewModel.state.current?.activePages[group.id]?.id
-                    let isViewed = isPageCompleted(page, in: group)
-                    return .init(
-                        progress: isCurrent ? viewModel.state.progressBar.progress : isViewed ? 1.0 : 0.0,
-                        duration: page.duration
-                    )
-                }
-            } else {
-                let currentPageId = viewModel.state.current?.activePages[group.id]?.id
-                let currentPageIndex = group.pages.firstIndex(where: { $0.id == currentPageId }) ?? -1
-                
-                return group.pages.enumerated().map { index, page in
-                    let isCurrent = page.id == currentPageId
-                    let progress = isCurrent ? 0.0 : (index < currentPageIndex ? (page.isViewed ? 1.0 : 0.0) : 0.0)
-
-                    return .init(
-                        progress: progress,
-                        duration: page.duration
-                    )
+                withAnimation(.easeInOut(duration: Constants.returnAnimationDuration)) {
+                    verticalDragOffset = 0
                 }
             }
         }
@@ -216,19 +153,6 @@ extension Stories {
             let minOpacity = 0.2
 
             return 1.0 - (progress * (1.0 - minOpacity))
-        }
-        
-        // MARK: - Helper Methods for New ViewState
-        
-        private func isPageCompleted(_ page: StoriesPageModel, in group: StoriesGroupModel) -> Bool {
-            guard let current = viewModel.state.current,
-                  let activePage = current.activePages[group.id],
-                  let currentPageIndex = group.pages.firstIndex(where: { $0.id == activePage.id }),
-                  let pageIndex = group.pages.firstIndex(where: { $0.id == page.id }) else {
-                return false
-            }
-
-            return pageIndex < currentPageIndex
         }
 
         // MARK: - Gesture Creation
@@ -248,42 +172,31 @@ extension Stories {
         private func handleScrollViewAppear(proxy: ScrollViewProxy) {
             guard let current = viewModel.state.current else { return }
 
-            Task {
-                proxy.scrollTo(current.selectedGroup.id, anchor: .center)
-            }
+            proxy.scrollTo(current.selectedGroup.id, anchor: .center)
         }
 
         private func handleCurrentChange(
             proxy: ScrollViewProxy,
             groupId: String
         ) {
-            Task {
-                withAnimation(.easeInOut(duration: Constants.animationDuration)) {
-                    proxy.scrollTo(groupId, anchor: .center)
-                }
+            withAnimation(.easeInOut(duration: Constants.animationDuration)) {
+                proxy.scrollTo(groupId, anchor: .center)
             }
         }
 
         private func handleLongPressChange(_ isPressing: Bool) {
             if isPressing {
                 viewModel.send(.didPauseTimer)
-
-                VideoPlayerStateManager.shared.setPaused()
             } else {
                 viewModel.send(.didResumeTimer)
-
-                VideoPlayerStateManager.shared.setPlaying()
             }
         }
-        
 
         private func handleDragChanged(
             _ value: DragGesture.Value,
             proxy: ScrollViewProxy
         ) {
             viewModel.send(.didPauseTimer)
-
-            VideoPlayerStateManager.shared.setPaused()
 
             if let dragDirection {
                 handleDragWithDirection(
@@ -309,7 +222,10 @@ extension Stories {
             _ value: DragGesture.Value,
             proxy: ScrollViewProxy
         ) {
-            guard let dragDirection else { return }
+            guard let dragDirection else {
+                viewModel.send(.didResumeTimer)
+                return
+            }
 
             switch dragDirection {
             case .vertical:
@@ -326,8 +242,6 @@ extension Stories {
             }
 
             viewModel.send(.didResumeTimer)
-
-            VideoPlayerStateManager.shared.setPlaying()
             self.dragDirection = nil
         }
 
@@ -339,7 +253,7 @@ extension Stories {
             guard dragDirection == .horizontal else { return }
 
             let shouldSwitch = abs(translation) > Constants.swipeThreshold
-            || abs(velocity) > Constants.velocityThreshold
+                || abs(velocity) > Constants.velocityThreshold
 
             if shouldSwitch {
                 performGroupSwitch(translation: translation)
@@ -357,10 +271,8 @@ extension Stories {
         ) {
             guard let current = viewModel.state.current else { return }
 
-            Task {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    proxy.scrollTo(current.selectedGroup.id, anchor: .center)
-                }
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                proxy.scrollTo(current.selectedGroup.id, anchor: .center)
             }
         }
 

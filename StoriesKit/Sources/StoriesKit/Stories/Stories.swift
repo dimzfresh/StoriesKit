@@ -9,6 +9,7 @@ public enum Stories {
     ///   - stateManager: StoriesStateManager for state management
     ///   - avatarNamespace: Namespace for matched geometry effect
     /// - Returns: UIViewController for presentation
+    @MainActor
     public static func build(
         groups: [StoriesGroupModel],
         stateManager: StoriesStateManager,
@@ -19,13 +20,14 @@ public enum Stories {
             avatarNamespace: avatarNamespace
         )
     }
-    
+
     /// Creates pure SwiftUI version of Stories (without UIHostingController)
     /// - Parameters:
     ///   - groups: Array of story groups
     ///   - stateManager: StoriesStateManager for state management
     ///   - avatarNamespace: Namespace for matched geometry effect
     /// - Returns: Pure SwiftUI View for embedding in SwiftUI hierarchy
+    @MainActor
     public static func build(
         stateManager: StoriesStateManager,
         avatarNamespace: Namespace.ID
